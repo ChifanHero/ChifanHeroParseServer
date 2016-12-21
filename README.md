@@ -1,2 +1,0 @@
-# ChifanHeroParseServer
-ChifanHero Parse Server
