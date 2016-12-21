@@ -1,0 +1,10 @@
+require('./handlers/image_handler.js');
+require('./handlers/rating_handler.js');
+require('./handlers/favorite_handler.js');
+require('./handlers/dish_handler.js');
+require('./handlers/list_handler.js');
+require('./handlers/restaurant_handler.js');
+require('./handlers/list_candidate_handler.js');
+require('./handlers/list_member_handler.js');
+require('./handlers/user_handler.js');
+require('./handlers/review_handler.js');
