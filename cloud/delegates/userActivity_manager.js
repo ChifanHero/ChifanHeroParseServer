@@ -29,7 +29,7 @@ exports.listUserActivities = function(req, res){
 		});
 
 		response['results'] = results;
-		res.json(200, response)
+		res.status(200).json(response);
 	}, function(error) {
 		error_handler.handle(error, {}, res);
 	});

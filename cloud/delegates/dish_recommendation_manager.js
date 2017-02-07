@@ -62,7 +62,7 @@ exports.createDishRecommendation = function(req, res){
 		recommendation['dish'] = dish_assembler.assemble(_dish);
 		recommendation['points_rewarded'] = userPoints;
 		response['result'] = recommendation;
-		res.json(201, response);
+		res.status(201).json(response);
 	}, function(error) {
 		error_handler.handle(error, {}, res);
 	});

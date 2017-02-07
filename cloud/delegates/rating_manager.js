@@ -51,7 +51,7 @@ exports.rateByUserSession = function(req, res){
 		var ratingRes = rating_assembler.assemble(_rating);
 		var response = {};
 		response['result'] = ratingRes;
-		res.json(201, response);
+		res.status(201).json(response);
 	}, function(error){
 		error_handler.handle(error, {}, res);
 	});
@@ -99,11 +99,11 @@ exports.findByUserSession = function(req, res) {
 				});
 				var response = {};
 				response['results'] = ratings;
-				res.json(200, response);
+				res.status(200).json(response);
 			} else {
 				var response = {};
 				response['results'] = [];
-				res.json(200, response);
+				res.status(200).json(response);
 			}
 		}, function(error) {
 			error_handler.handle(error, {}, res);

@@ -1,7 +1,7 @@
 {
-  "name": "parse-server-example",
-  "version": "1.4.0",
-  "description": "An example Parse API server using the parse-server module",
+  "name": "parse-server-production",
+  "version": "1.0.0",
+  "description": "Chifanhero parse-server",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -14,7 +14,8 @@
     "parse": "~1.8.0",
     "parse-server": "~2.2.2",
     "underscore": "latest",
-    "parse-dashboard": "latest"
+    "parse-dashboard": "latest",
+    "parse-image": "latest"
   },
   "scripts": {
     "start": "node index.js"

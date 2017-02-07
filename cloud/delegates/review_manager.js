@@ -86,7 +86,7 @@ exports.createReview = function(req, res){
 		Parse.Object.saveAll(objectsToSave);
 		var response = {};
 		response['result'] = review_assembler.assemble(savedReview);
-		res.json(201, response);
+		res.status(201).json(response);
 	}, function(error) {
 		error_handler.handle(error, {}, res);
 	});
@@ -144,7 +144,7 @@ exports.listReviews = function(req, res){
 		});
 
 		response['results'] = results;
-		res.json(200, response)
+		res.status(200).json(response);
 	}, function(error) {
 		error_handler.handle(error, {}, res);
 	});
@@ -157,23 +157,22 @@ exports.fetchReview = function(req, res) {
 	reviewQuery.include('user');
 	reviewQuery.include('user.picture');
 	reviewQuery.include('restaurant');
-	var promises = [];
-	promises.push(reviewQuery.find());
 	var imageQuery = new Parse.Query(Image);
 	imageQuery.equalTo('owner_type', 'Review');
 	var review = new Review();
 	review.id = id;
 	imageQuery.equalTo('review', review);
-	promises.push(imageQuery.find());
-	Parse.Promise.when(promises).then(function(_reviews, _photos){
+	var p1 = reviewQuery.find();
+	var p2 = imageQuery.find();
+	Parse.Promise.when(p1, p2).then(function(_reviews, _photos){
 		if (_reviews != undefined && _reviews.length > 0) {
 			console.log(_photos.length); 
 			var review = review_assembler.assemble(_reviews[0], _photos);
 			var response = {};
 			response['result'] = review;
-			res.json(200, response);
+			res.status(200).json(response);
 		} else {
-			res.json(404, {});
+			res.status(404).json({});
 		}
 		
 	}, function(error) {

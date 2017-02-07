@@ -28,7 +28,7 @@ exports.oauthLogIn = function(req, res){
 
 		var userRes = user_assembler.assemble(user);
 		response['user'] = userRes;
-		res.json(200, response);
+		res.status(200).json(response);
 	});
 }
 
@@ -125,14 +125,14 @@ exports.logIn = function(req, res){
 				var picture = image_assembler.assemble(_picture);
 				user['picture'] = picture;
 				response['user'] = user;
-				res.json(200, response);
+				res.status(200).json(response);
 			}, function(error){
 				response['user'] = user;
-				res.json(200, response);
+				res.status(200).json(response);
 			});
 		} else {
 			response['user'] = user;
-			res.json(200, response);
+			res.status(200).json(response);
 		}
 	}, function(error){
 		error_handler.handle(error, {}, res);
@@ -151,7 +151,7 @@ exports.signUp = function(req, res) {
 	if (username == undefined) {
 		var error = {};
 		error['message'] = "username must be provided";
-		res.json(400, error);
+		res.status(400).json(error);
 		return;
 	}
 
@@ -161,7 +161,7 @@ exports.signUp = function(req, res) {
 	if (encodedPassword == undefined) {
 		var error = {};
 		error['message'] = "password must be provided";
-		res.json(400, error);
+		res.status(400).json(error);
 		return;
 	}
 
@@ -186,13 +186,13 @@ exports.signUp = function(req, res) {
 				var picture = image_assembler.assemble(_picture);
 				userRes['picture'] = picture;
 				response['user'] = userRes;
-				res.json(200, response);
+				res.status(200).json(response);
 			}, function(error){
 				error_handler.handle(error, {}, res);
 			});
 		} else {
 			response['user'] = userRes;
-			res.json(200, response);
+			res.status(200).json(response);
 		}
 	}, function(error){
 		error_handler.handle(error, {}, res);
@@ -233,13 +233,13 @@ exports.update = function(req, res){
 				var pictureRes = image_assembler.assemble(_picture);
 				userRes['picture'] = pictureRes;
 				response['user'] = userRes;
-				res.json(200, response);
+				res.status(200).json(response);
 			}, function(error){
 				error_handler.handle(error, {}, res);
 			});
 		} else {
 			response['user'] = userRes;
-			res.json(200, response);
+			res.status(200).json(response);
 		}
 	}, function(error){
 		error_handler.handle(error, {}, res);
@@ -252,7 +252,7 @@ exports.logOut = function(req, res){
 	Parse.User.logOut().then(function(){
 		var response = {};
 		response['success'] = true;
-		res.json(200, response);
+		res.status(200).json(response);
 	}, function(error){
 		error_handler.handle(error, {}, res);
 	});	

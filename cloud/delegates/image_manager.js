@@ -14,7 +14,7 @@ var ImageDatabase = Parse.Object.extend('Image');
 // 	image.save().then(function(_image) {
 // 		var imageRes = {};
 // 		imageRes["result"] = image_assembler.assemble(_image);
-// 		res.json(200, imageRes);
+// 		res.status(200).json(imageRes);
 // 	}, function(error) {
 // 		error_handler.handle(error, {}, res);
 // 	});
@@ -51,7 +51,7 @@ exports.uploadImage = function(req, res) {
 		var imageRes = image_assembler.assemble(newImage);
 		var response = {};
 		response['result'] = imageRes;
-		res.json(200, response);
+		res.status(200).json(response);
 	}, function(error) {
 		error_handler.handle(error, {}, res);
 	});
@@ -87,7 +87,6 @@ function createUserActivity(eventId, user, imageId, restaurantId) {
 
 
 exports.findAllByRestaurantId = function(req, res) {
-	console.log('here1');
 	var restaurantId = req.query.restaurantId;
 	var restaurant = {
 	        __type: "Pointer",
@@ -97,7 +96,6 @@ exports.findAllByRestaurantId = function(req, res) {
 	var query = new Parse.Query(ImageDatabase);
 	query.equalTo('restaurant', restaurant);
 	query.find().then(function(images) {
-		console.log('here2');
 		var results = [];
 		if (images != undefined && images.length > 0) {
 			_.each(images, function(image) {
@@ -107,9 +105,8 @@ exports.findAllByRestaurantId = function(req, res) {
 		}
 		var response = {};
 		response['results'] = results;
-		res.json(200, response);
+		res.status(200).json(response)
 	}, function(error) {
-		console.log('here3');
 		error_handler.handle(error, {}, res);
 	});
 }

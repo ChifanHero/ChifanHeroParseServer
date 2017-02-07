@@ -24,7 +24,7 @@ exports.findByRestaurantId = function(req, res) {
 		}
 		var response = {};
 		response['results'] = dishes;
-		res.json(200, response);
+		res.status(200).json(response);
 	}, function(error) {
 		error_handler.handle(error, {}, res);
 	});
@@ -32,10 +32,9 @@ exports.findByRestaurantId = function(req, res) {
 
 exports.findById = function(req, res) {
 	var id = req.params.id;
-	var promises = [];
-	promises.push(findDishById(id));
-	promises.push(findListsByDishId(id));
-	Parse.Promise.when(promises).then(function(_dish, _lists){
+	var p1 = findDishById(id);
+	var p2 = findListsByDishId(id);
+	Parse.Promise.when(p1, p2).then(function(_dish, _lists){
 		var dish = dish_assembler.assemble(_dish);
 		var lists = [];
 		if (_lists != undefined && _lists.length > 0) {
@@ -49,7 +48,7 @@ exports.findById = function(req, res) {
 		dish['related_lists'] = lists;
 		var response = {};
 		response['result'] = dish;
-		res.json(200, response);
+		res.status(200).json(response);
 	}, function(error){
 		error_handler.handle(error, {}, res);
 	});

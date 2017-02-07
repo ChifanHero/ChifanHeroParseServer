@@ -10,9 +10,11 @@ exports.getHomePage = function(req, res) {
 	var requestOptions = [
 		{
 			method: 'POST',
-			url: 'http://internal.service.lightningorder.com/restaurants',
+			url: 'http://chifanhero.us-east-1.elasticbeanstalk.com/parse/restaurants',
 			headers: {
-				'Content-Type': 'application/json;charset=utf-8'
+				'Content-Type': 'application/json;charset=utf-8',
+                'X-Parse-Application-Id': 'Z6ND8ho1yR4aY3NSq1zNNU0kPc0GDOD1UZJ5rgxM',
+                'X-Parse-Master-Key': 'KheL2NaRmyVKr11LZ7yC0uvMHxNv8RpX389oUf8F'
 			},
 			body: {
 				request_title: "热门餐厅",
@@ -29,9 +31,11 @@ exports.getHomePage = function(req, res) {
 		},
 		{
 			method: 'POST',
-			url: 'http://internal.service.lightningorder.com/restaurants',
+			url: 'http://chifanhero.us-east-1.elasticbeanstalk.com/parse/restaurants',
 			headers: {
-				'Content-Type': 'application/json;charset=utf-8'
+				'Content-Type': 'application/json;charset=utf-8',
+                'X-Parse-Application-Id': 'Z6ND8ho1yR4aY3NSq1zNNU0kPc0GDOD1UZJ5rgxM',
+                'X-Parse-Master-Key': 'KheL2NaRmyVKr11LZ7yC0uvMHxNv8RpX389oUf8F'
 			},
 			body: {
 				request_title: "离您最近",
@@ -59,7 +63,7 @@ exports.getHomePage = function(req, res) {
 			if(isAllRequestCompleted(responseIndicator, requestOptions.length)){
 				var response = {};
 				response['homepagesections'] = homepageSections;
-				res.json(200, response)
+				res.status(200).json(response);
 			}
 		},function(httpResponse) {
 			// error
@@ -77,14 +81,13 @@ var isAllRequestCompleted = function(currentCount, totalCount){
 }
 
 exports.getRecommendations = function(req, res) {
-	var promises = [];
 	var longitude = parseFloat(req.query.lon);
 	var latitude = parseFloat(req.query.lat);
-	promises.push(findNearestRestaurants(10, latitude, longitude));
-	promises.push(findRecomendedRestaurants(5, latitude, longitude));
-	promises.push(findHotestRestaurants(15, latitude, longitude));
+    var p1 = findNearestRestaurants(10, latitude, longitude);
+    var p2 = findRecomendedRestaurants(5, latitude, longitude);
+    var p3 = findHotestRestaurants(15, latitude, longitude);
 	var response = {};
-	Parse.Promise.when(promises).then(function(nearest, recommended, hottest){
+	Parse.Promise.when(p1, p2, p3).then(function(nearest, recommended, hottest){
 		var recommendations = [];
 		var placement = 0;
 		if (recommended.length >= 3) {
@@ -97,7 +100,7 @@ exports.getRecommendations = function(req, res) {
 		placement++;
 		recommendations.push(assembleRecommendation(nearest, "离您最近", placement, latitude, longitude));
 		response['homepagesections'] = recommendations;
-		res.json(200, response);
+		res.status(200).json(response);
 	}, function(error) {
 		error_handler.handle(error, {}, res); 
 	});

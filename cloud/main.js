@@ -1,5 +1,4 @@
-//require('cloud/app.js');
-//require('cloud/handlers.js');
+require('./handlers.js');
 
 Parse.Cloud.define('hello', function(req, res) {
   res.success('Hi');

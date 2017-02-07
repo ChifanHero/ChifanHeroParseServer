@@ -47,7 +47,7 @@ exports.addByUserSession = function(req, res){
 		var favoriteRes = favorite_assembler.assemble(result);
 		var response = {};
 		response['result'] = favoriteRes;
-		res.json(201, response);
+		res.status(201).json(response);
 	}, function(error){
 		error_handler.handle(error, {}, res);
 	});
@@ -93,7 +93,7 @@ exports.findByUserSession = function(req, res){
 		}
 		var response = {};
 		response['results'] = favorites;
-		res.json(200, response);
+		res.status(200).json(response);
 	}, function(error) {
 		error_handler.handle(error, {}, res);
 	});
@@ -122,7 +122,7 @@ exports.deleteByUserSession = function(req, res){
 	query.find().then(function(results){
 		return Parse.Object.destroyAll(results);
 	}).then(function(){
-		res.json(200, {});
+		res.status(200).json({});
 	}, function(error){
 		error_handler.handle(error, {}, res);
 	});
@@ -165,12 +165,12 @@ exports.checkIsUserFavorite = function(req, res){
 		if (results != undefined && results.length > 0) {
 			var response = {};
 			response['result'] = true;
-			res.json(200, response);
+			res.status(200).json(response);
 			return;
 		}
 		var response = {};
 		response['result'] = false;
-		res.json(200, response);
+		res.status(200).json(response);
 	}, function(error) {
 		error_handler.handle(error, {}, res);
 	});

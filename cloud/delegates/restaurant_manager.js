@@ -68,7 +68,7 @@ exports.listAll = function(req, res) {
 		response['title'] = requestTitle;
 		response['placement'] = placement;
 		response['results'] = restaurants;
-		res.json(200, response)
+		res.status(200).json(response);
 	}, function(error) {
 		error_handler.handle(error, {}, res);
 	})
@@ -83,7 +83,11 @@ exports.findById = function(req, res) {
 	promises.push(findHotDishesByRestaurantId(id));
 	promises.push(findHotReviewsByRestaurantId(id));
 	promises.push(findPhotosByRestaurantId(id));
-	Parse.Promise.when(promises).then(function(_restaurant, _dishes, _review, _photo){
+	var p1 = findRestaurantById(id);
+	var p2 = findHotDishesByRestaurantId(id);
+	var p3 = findHotReviewsByRestaurantId(id);
+	var p4 = findPhotosByRestaurantId(id);
+	Parse.Promise.when(p1, p2, p3, p4).then(function(_restaurant, _dishes, _review, _photo){
 		var restaurant = restaurant_assembler.assemble(_restaurant, latitude, longitude);
 		var dishes = [];
 		if (_dishes != undefined && _dishes.length > 0) {
@@ -107,14 +111,14 @@ exports.findById = function(req, res) {
 				restaurant['votes'] = votes;
 				var response = {};
 				response['result'] = restaurant;
-				res.json(200, response);
+				res.status(200).json(response);
 			}, function(error){
 				restaurant['votes'] = 0;
 				var response = {};
 				response['result'] = restaurant;
-				res.json(200, response);
+				res.status(200).json(response);
 			});
-		} 
+		}
 		if (_review != undefined) {
 			var reviewsContainer = {};
 			reviewsContainer['total_count'] = _review['total_count'];
@@ -144,7 +148,7 @@ exports.findById = function(req, res) {
 		}
 		var response = {};
 		response['result'] = restaurant;
-		res.json(200, response);
+		res.status(200).json(response);
 		
 	}, function(error) {
 		error_handler.handle(error, {}, res);
@@ -156,7 +160,7 @@ exports.vote = function(req, res) {
 	if (id === undefined) {
 		var error = {};
 		error['message'] = 'Please provide restaurant id';
-		res.json(401, error);
+		res.status(401).json(error);
 		return;
 	} else {
 		var checkQuery = new Parse.Query(Restaurant);
@@ -175,7 +179,7 @@ exports.vote = function(req, res) {
 						created['id'] = outcome.id;
 						created['votes'] = outcome.get('votes');
 						response['result'] = created;
-						res.json(200, response);
+						res.status(200).json(response);
 					}, function(error){
 						error_handler.handle(error, {}, res);
 					});
@@ -188,7 +192,7 @@ exports.vote = function(req, res) {
 						created['id'] = outcome.id;
 						created['votes'] = outcome.get('votes');
 						response['result'] = created;
-						res.json(200, response);
+						res.status(200).json(response);
 					}, function(error) {
 						error_handler.handle(error, {}, res);
 					});
@@ -199,7 +203,7 @@ exports.vote = function(req, res) {
 		}, function(){
 			var error = {};
 			error['message'] = 'restaurant not found';
-			res.json(404, error);
+			res.status(404).json(error);
 		});
 	}
 }
@@ -231,7 +235,7 @@ exports.rate = function(req, res){
 			var restaurantRes = restaurant_assembler.assemble(_restaurant);
 			var response = {};
 			response['result'] = restaurantRes;
-			res.json(200, response);
+			res.status(200).json(response);
 		}, function(error) {
 			error_handler.handle(error, {}, res);
 		});
@@ -259,7 +263,6 @@ function findHotDishesByRestaurantId(id) {
 
 function findHotReviewsByRestaurantId(id) {
 	var promise = new Parse.Promise();
-	var dependencies = [];
 	var reviewQuery = new Parse.Query(Review);
 	reviewQuery.descending('review_quality');
 	reviewQuery.limit(5);
@@ -269,11 +272,12 @@ function findHotReviewsByRestaurantId(id) {
 	var restaurant = new Restaurant();
 	restaurant.id = id;
 	reviewQuery.equalTo('restaurant', restaurant);
-	dependencies.push(reviewQuery.find());
 	reviewQuery = new Parse.Query(Review);
 	reviewQuery.equalTo('restaurant', restaurant);
-	dependencies.push(reviewQuery.count());	
-	Parse.Promise.when(dependencies).then(function(reviews, count) {
+
+    var p1 = reviewQuery.find();
+    var p2 = reviewQuery.count();
+	Parse.Promise.when(p1, p2).then(function(reviews, count) {
 		var result = {};
 		result['reviews'] = reviews;
 		result['total_count'] = count;
@@ -286,16 +290,16 @@ function findHotReviewsByRestaurantId(id) {
 
 function findPhotosByRestaurantId(id) {
 	var promise = new Parse.Promise();
-	var dependencies = [];
 	var query = new Parse.Query(Image);
 	var restaurant = new Restaurant();
 	restaurant.id = id;
 	query.equalTo('restaurant', restaurant);
-	dependencies.push(query.find());
 	query = new Parse.Query(Image);
 	query.equalTo('restaurant', restaurant);
-	dependencies.push(query.count());	
-	Parse.Promise.when(dependencies).then(function(photos, count) {
+
+	var p1 = query.find();
+	var p2 = query.count();
+	Parse.Promise.when(p1, p2).then(function(photos, count) {
 		var result = {};
 		result['photos'] = photos;
 		result['total_count'] = count;
@@ -330,14 +334,14 @@ exports.update = function(req, res) {
 				var response = {};
 				restaurant['picture'] = imageRes;
 				response['result'] = restaurant;
-				res.json(200, response);
+				res.status(200).json(response);
 			}, function(error){
 				error_handler.handle(error, {}, res);
 			});
 		} else {
 			var response = {};
 			response['result'] = restaurant;
-			res.json(200, response);
+			res.status(200).json(response);
 		}
 	}, function(error) {
 		error_handler.handle(error, {}, res);

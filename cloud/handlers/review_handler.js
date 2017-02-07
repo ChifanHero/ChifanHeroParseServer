@@ -7,12 +7,12 @@ Parse.Cloud.beforeSave('Review', function(request, response){
 	if (reviewToSave.dirty('rating')) {
 		var id = reviewToSave.id;
 		var restaurant = reviewToSave.get('restaurant');
-		var promises = [];
-		promises.push(findRestaurantById(restaurant.id));
+		var p1 = findRestaurantById(restaurant.id);
+		var p2 = new Parse.Promise();
 		if (id != undefined) { // existing review
-			promises.push(findReviewById(id));
+			p2 = findReviewById(id);
 		}
-		Parse.Promise.when(promises).then(function(_restaurant, _oldReview){
+		Parse.Promise.when(p1, p2).then(function(_restaurant, _oldReview){
 			var oldRating = -1;
 			if (_oldReview != undefined) {
 				oldRating = _oldReview.get('rating');

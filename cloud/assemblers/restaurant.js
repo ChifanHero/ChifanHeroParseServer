@@ -24,8 +24,7 @@ exports.assemble = function(source, lat, lon) {
 				distance["unit"] = "mi"
 				restaurant['distance'] = distance;
 			}
-		} 
-		
+		}
 		restaurant['favorite_count'] = source.get('favorite_count');
 		restaurant['like_count'] = source.get('like_count');
 		restaurant['dislike_count'] = source.get('dislike_count');
@@ -37,7 +36,6 @@ exports.assemble = function(source, lat, lon) {
 		} else {
 			restaurant['rating'] = 0.0
 		}
-		
 		restaurant['picture'] = image_assembler.assemble(source.get('image'));
 	}
 	return restaurant; 

@@ -17,7 +17,7 @@ exports.findById = function(req, res) {
 		var selectedCollection = selectedCollection_assembler.assemble(_selectedCollection);
 		var response = {};
 		response['result'] = selectedCollection;
-		res.json(200, response);
+		res.status(200).json(response);
 	}, function(error){
 		error_handler.handle(error, {}, res);
 	});
@@ -46,7 +46,7 @@ exports.findAllWithCenterAndRadius = function(req, res){
 		}
 		var response = {};
 		response['results'] = results;
-		res.json(200, response);
+        res.status(200).json(response);
 	}, function(error) {
 		error_handler.handle(error, {}, res);
 	});
@@ -70,7 +70,7 @@ exports.findAllRestaurantsMembersById = function(req, res){
 		}
 		var response = {};
 		response['results'] = restaurants;
-		res.json(200, response);
+        res.status(200).json(response);
 	}, function(error){
 		error_handler.handle(error, {}, res);
 	});
@@ -103,7 +103,7 @@ exports.nominateRestaurant = function(req, res){
 				var memCanRes = {};
 				memCanRes["count"] = _memCan.get("count");
 				response["result"] = memCanRes;
-				res.json(200, response);
+                res.status(200).json(response);
 			}, function(error) {
 				error_handler.handle(error, {}, res);
 			});
@@ -117,7 +117,7 @@ exports.nominateRestaurant = function(req, res){
 				var memCanRes = {};
 				memCanRes["count"] = _memCan.get("count");
 				response["result"] = memCanRes;
-				res.json(200, response);
+                res.status(200).json(response);
 			}, function(error) {
 				error_handler.handle(error, {}, res);
 			});

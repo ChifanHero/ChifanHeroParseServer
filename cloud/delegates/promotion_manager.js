@@ -106,7 +106,7 @@ exports.listAll = function(req, res) {
 				}).reverse();
 				var response = {};
 				response['results'] = sortedPromotions;
-				res.json(200, response);
+				res.status(200).json(response);
 			}, function(error){
 				error_handler.handle(error, {}, res);
 			});
@@ -126,7 +126,7 @@ exports.listAll = function(req, res) {
 				}
 			}).reverse();
 			response['results'] = sortedPromotions;
-			res.json(200, response);
+			res.status(200).json(response);
 		}
 		
 	}, function(error) {

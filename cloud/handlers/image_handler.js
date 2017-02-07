@@ -10,10 +10,10 @@ Parse.Cloud.beforeSave('Image', function(request, response){
 				url : original.url()
 			}).then(function(raw){
 				var data = raw.buffer;
-				var tasks = [];
 				var filename = getFileName(original.name());
-				tasks.push(createThumbnail(data, filename));
-				Parse.Promise.when(tasks).then(function(thumbnail){
+
+				var p1 = createThumbnail(data, filename);
+				Parse.Promise.when(p1).then(function(thumbnail){
 					imageToSave.set('thumbnail', thumbnail);
 					response.success();
 				}, function(error){

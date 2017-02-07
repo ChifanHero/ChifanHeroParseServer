@@ -45,7 +45,7 @@ exports.findByRestaurantId = function(req, res) {
 		}
 		var response = {};
 		response['results'] = _.values(menuDic);
-		res.json(200, response);
+		res.status(200).json(response);
 	}, function(error){
 		error_handler.handle(error, {}, res);
 	});
