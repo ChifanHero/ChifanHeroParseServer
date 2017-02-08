@@ -4,6 +4,7 @@ Chifanher Server using the [parse-server](https://github.com/ParsePlatform/parse
 
 Read the full Parse Server guide here: https://github.com/ParsePlatform/parse-server/wiki/Parse-Server-Guide
 
+# Production
 ## AWS Elastic Beanstalk Command Line Interface (EB CLI) use guide
 ### Install the EB CLI in a Virtual Environment
 You can avoid requirement version conflicts with other pip packages by installing the EB CLI in a virtual environment.
@@ -38,9 +39,26 @@ You can use the deactivate command to exit the virtual environment. Whenever you
 4. Make necessary changes to the code.
 5. Run `eb deploy` to deploy the code to AWS Elastic Beanstalk.
 
-### Work with github
+## Work with github
 github link:
 ```
 https://github.com/ChifanHero/ChifanHeroParseServer
 ```
 `master`branch is for production, `staging`branch is for staging
+
+## API spec
+### Endpoint
+http://chifanhero.us-east-1.elasticbeanstalk.com/parse
+
+### Headers
+`X-Parse-Application-Id: Z6ND8ho1yR4aY3NSq1zNNU0kPc0GDOD1UZJ5rgxM`
+
+`X-Parse-Master-Key: KheL2NaRmyVKr11LZ7yC0uvMHxNv8RpX389oUf8F`
+
+# Dev
+1. Make sure you have at least Node 4.3. `node --version`
+2. Change directory to this repo
+3. `npm install`
+4. Install mongo locally using http://docs.mongodb.org/master/tutorial/install-mongodb-on-os-x/
+5. Run the server with:`npm start`
+6. Endpoint will be `localhost:1337/parse`
