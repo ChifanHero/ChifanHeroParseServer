@@ -21,19 +21,22 @@ var review_manager = require('./cloud/delegates/review_manager');
 var userActivity_manager = require('./cloud/delegates/userActivity_manager');
 var dish_recommendation_manager = require('./cloud/delegates/dish_recommendation_manager');
 
+var globalKey = {
+    dbURI: "mongodb://aws:aws@ds015670-a0.mlab.com:15670,ds015670-a1.mlab.com:15670/lightning?replicaSet=rs-ds015670",
+    appId: "Z6ND8ho1yR4aY3NSq1zNNU0kPc0GDOD1UZJ5rgxM",
+    masterKey: "KheL2NaRmyVKr11LZ7yC0uvMHxNv8RpX389oUf8F",
+    serverURL: "http://localhost:1337/parse",
+    fileKey: "c25308ff-6a43-40e0-a09a-2596427b692c"
+}
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 
-if (!databaseUri) {
-    console.log('DATABASE_URI not specified, falling back to localhost.');
-}
-
 var api = new ParseServer({
-    databaseURI: databaseUri || 'mongodb://localhost:27017/dev',
+    databaseURI: databaseUri || globalKey.dbURI,
     cloud: process.env.CLOUD_CODE_MAIN || __dirname + '/cloud/main.js',
-    appId: process.env.APP_ID || 'myAppId',
-    masterKey: process.env.MASTER_KEY || '', //Add your master key here. Keep it secret!
-    fileKey: process.env.FILE_KEY || '', // Add the file key to provide access to files already hosted on Parse
-    serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse',  // Don't forget to change to https if needed
+    appId: process.env.APP_ID || globalKey.appId,
+    masterKey: process.env.MASTER_KEY || globalKey.masterKey, //Add your master key here. Keep it secret!
+    fileKey: process.env.FILE_KEY || globalKey.fileKey, // Add the file key to provide access to files already hosted on Parse
+    serverURL: process.env.SERVER_URL || globalKey.serverURL,  // Don't forget to change to https if needed
     liveQuery: {
         classNames: ["Image"] // List of classes to support for query subscriptions
     }
@@ -42,9 +45,9 @@ var api = new ParseServer({
 var dashboard = new ParseDashboard({
     "apps": [
         {
-            "serverURL": process.env.SERVER_URL,
-            "appId": process.env.APP_ID,
-            "masterKey": process.env.MASTER_KEY,
+            "serverURL": process.env.SERVER_URL || globalKey.serverURL,
+            "appId": process.env.APP_ID || globalKey.appId,
+            "masterKey": process.env.MASTER_KEY || globalKey.masterKey,
             "appName": "吃饭英雄"
         }
     ]
