@@ -21,22 +21,23 @@ var review_manager = require('./cloud/delegates/review_manager');
 var userActivity_manager = require('./cloud/delegates/userActivity_manager');
 var dish_recommendation_manager = require('./cloud/delegates/dish_recommendation_manager');
 
-var globalKey = {
-    dbURI: "mongodb://aws:aws@ds015670-a0.mlab.com:15670,ds015670-a1.mlab.com:15670/lightning?replicaSet=rs-ds015670",
-    appId: "Z6ND8ho1yR4aY3NSq1zNNU0kPc0GDOD1UZJ5rgxM",
-    masterKey: "KheL2NaRmyVKr11LZ7yC0uvMHxNv8RpX389oUf8F",
+var devEnv = {
+    dbURI: "mongodb://aws:aws@ds015780.mlab.com:15780/lightning-staging",
+    appId: "28BX7btLUKGGsFGCSyGGv9Pzj1nCWDl9EV6GpMBQ",
+    masterKey: "rj0pEKLhfWX8310qDj9s0rUEAo4ukQJrTNtCP11j",
     serverURL: "http://localhost:1337/parse",
-    fileKey: "c25308ff-6a43-40e0-a09a-2596427b692c"
+    fileKey: "b0e50b64-fcb1-41db-8a0d-96a8e5de542d",
+    appName: "ChifanHero-Staging"
 }
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 
 var api = new ParseServer({
-    databaseURI: databaseUri || globalKey.dbURI,
+    databaseURI: databaseUri || devEnv.dbURI,
     cloud: process.env.CLOUD_CODE_MAIN || __dirname + '/cloud/main.js',
-    appId: process.env.APP_ID || globalKey.appId,
-    masterKey: process.env.MASTER_KEY || globalKey.masterKey, //Add your master key here. Keep it secret!
-    fileKey: process.env.FILE_KEY || globalKey.fileKey, // Add the file key to provide access to files already hosted on Parse
-    serverURL: process.env.SERVER_URL || globalKey.serverURL,  // Don't forget to change to https if needed
+    appId: process.env.APP_ID || devEnv.appId,
+    masterKey: process.env.MASTER_KEY || devEnv.masterKey, //Add your master key here. Keep it secret!
+    fileKey: process.env.FILE_KEY || devEnv.fileKey, // Add the file key to provide access to files already hosted on Parse
+    serverURL: process.env.SERVER_URL || devEnv.serverURL,  // Don't forget to change to https if needed
     liveQuery: {
         classNames: ["Image"] // List of classes to support for query subscriptions
     }
@@ -45,10 +46,10 @@ var api = new ParseServer({
 var dashboard = new ParseDashboard({
     "apps": [
         {
-            "serverURL": process.env.SERVER_URL || globalKey.serverURL,
-            "appId": process.env.APP_ID || globalKey.appId,
-            "masterKey": process.env.MASTER_KEY || globalKey.masterKey,
-            "appName": "吃饭英雄"
+            "serverURL": process.env.SERVER_URL || devEnv.serverURL,
+            "appId": process.env.APP_ID || devEnv.appId,
+            "masterKey": process.env.MASTER_KEY || devEnv.masterKey,
+            "appName": process.env.APP_NAME || devEnv.appName
         }
     ]
 });
@@ -86,7 +87,7 @@ app.use('/dashboard', dashboard);
 
 // Parse Server plays nicely with the rest of your web routes
 app.get('/', function (req, res) {
-    res.status(200).send('Make sure to star the parse-server repo on GitHub!');
+    res.status(200).send('Welcome to ChifanHero!');
 });
 
 // There will be a test page available on the /test path of your server url
