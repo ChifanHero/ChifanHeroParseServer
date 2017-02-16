@@ -58,8 +58,6 @@ exports.findByUserSession = function(req, res){
 	var type = req.query['type'];
 	var lat = parseFloat(req.query['lat']);
 	var lon = parseFloat(req.query['lon']);
-	console.log(lat);
-	console.log(lon);
 	var user = req.user;
 	if (user == undefined) {
 		var error = new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Invalid session token");
