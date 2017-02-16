@@ -5,7 +5,6 @@
 !.elasticbeanstalk/*.global.yml
 
 .idea/
-.ebextensions/
 .elasticbeanstalk/
 node_modules/
 logs/
