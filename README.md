@@ -5,6 +5,10 @@ Chifanher Server using the [parse-server](https://github.com/ParsePlatform/parse
 Read the full Parse Server guide here: https://github.com/ParsePlatform/parse-server/wiki/Parse-Server-Guide
 
 # Production
+## AWS environment setting
+1. t2.small or higher level machine is required.
+2. `~/.ebextension/app.config` is necessary and should be added to git. (In order to resolve dependency issues)
+
 ## AWS Elastic Beanstalk Command Line Interface (EB CLI) use guide
 ### Install the EB CLI in a Virtual Environment
 You can avoid requirement version conflicts with other pip packages by installing the EB CLI in a virtual environment.
