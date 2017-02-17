@@ -48,7 +48,7 @@ github link:
 ```
 https://github.com/ChifanHero/ChifanHeroParseServer
 ```
-`master`branch is for production, `staging`branch is for staging
+`master`branch is for production, `staging`branch is for staging, `dev` branch is for dev
 
 ## API spec
 ### Endpoint
@@ -58,6 +58,22 @@ http://chifanhero.us-east-1.elasticbeanstalk.com/parse
 `X-Parse-Application-Id: Z6ND8ho1yR4aY3NSq1zNNU0kPc0GDOD1UZJ5rgxM`
 
 `X-Parse-Master-Key: KheL2NaRmyVKr11LZ7yC0uvMHxNv8RpX389oUf8F`
+
+## Deploy
+`eb deploy Production-env`
+
+# Staging
+## API spec
+### Endpoint
+http://chifanhero-staging.us-east-1.elasticbeanstalk.com/parse
+
+### Headers
+`X-Parse-Application-Id: 28BX7btLUKGGsFGCSyGGv9Pzj1nCWDl9EV6GpMBQ`
+
+`X-Parse-Master-Key: rj0pEKLhfWX8310qDj9s0rUEAo4ukQJrTNtCP11j`
+
+## Deploy
+`eb deploy Staging-env`
 
 # Dev
 1. Make sure you have at least Node 4.3. `node --version`
