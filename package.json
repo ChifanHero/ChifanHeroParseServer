@@ -15,7 +15,7 @@
     "parse-server": "~2.2.2",
     "underscore": "latest",
     "parse-dashboard": "latest",
-    "parse-image": "latest"
+    "sharp": "latest"
   },
   "scripts": {
     "start": "node index.js"
