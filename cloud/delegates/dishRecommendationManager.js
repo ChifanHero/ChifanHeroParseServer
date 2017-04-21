@@ -1,13 +1,12 @@
 var _ = require('underscore');
 var UserActivity = Parse.Object.extend('UserActivity');
 var Dish = Parse.Object.extend('NewDish');
-var error_handler = require('../error_handler');
+var errorHandler = require('../errorHandler');
 var Image = Parse.Object.extend('Image');
 var Restaurant = Parse.Object.extend('Restaurant');
-var review_assembler = require('../assemblers/review');
-var dish_assembler = require('../assemblers/dish');
-var fs = require('fs');
-var config = JSON.parse(fs.readFileSync('cloud/config.js'));
+var reviewAssembler = require('../assemblers/review');
+var dishAssembler = require('../assemblers/dish');
+var CONFIG = require('../config.json');
 
 // photo ids
 // dish id, name
@@ -20,7 +19,7 @@ exports.createDishRecommendation = function (req, res) {
   var restaurantId = req.body['restaurant_id'];
   var photos = req.body['photos'];
   var dish = new Dish();
-  var userPoints = config['dish_recommendation']['user_points'];
+  var userPoints = CONFIG.dish_recommendation.user_points;
   if (dishId !== undefined) {
     dish.id = dishId;
   } else {
@@ -59,13 +58,11 @@ exports.createDishRecommendation = function (req, res) {
     Parse.Object.saveAll(objectsToSave);
     var response = {};
     var recommendation = {};
-    recommendation['dish'] = dish_assembler.assemble(_dish);
+    recommendation['dish'] = dishAssembler.assemble(_dish);
     recommendation['points_rewarded'] = userPoints;
     response['result'] = recommendation;
     res.status(201).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
-
-
 }

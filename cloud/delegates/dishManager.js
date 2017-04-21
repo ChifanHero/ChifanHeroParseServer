@@ -2,8 +2,8 @@ var Dish = Parse.Object.extend('Dish');
 var Restaurant = Parse.Object.extend('Restaurant');
 var ListMember = Parse.Object.extend('ListMember');
 var _ = require('underscore');
-var dish_assembler = require('../assemblers/dish');
-var error_handler = require('../error_handler');
+var dishAssembler = require('../assemblers/dish');
+var errorHandler = require('../errorHandler');
 
 exports.findByRestaurantId = function (req, res) {
   var restId = req.query.restaurant;
@@ -18,7 +18,7 @@ exports.findByRestaurantId = function (req, res) {
     var dishes = [];
     if (results != undefined && results.length > 0) {
       _.each(results, function (result) {
-        var dish = dish_assembler.assemble(result);
+        var dish = dishAssembler.assemble(result);
         dishes.push(dish);
       });
     }
@@ -26,7 +26,7 @@ exports.findByRestaurantId = function (req, res) {
     response['results'] = dishes;
     res.status(200).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 
@@ -35,7 +35,7 @@ exports.findById = function (req, res) {
   var p1 = findDishById(id);
   var p2 = findListsByDishId(id);
   Parse.Promise.when(p1, p2).then(function (_dish, _lists) {
-    var dish = dish_assembler.assemble(_dish);
+    var dish = dishAssembler.assemble(_dish);
     var lists = [];
     if (_lists != undefined && _lists.length > 0) {
       _.each(_lists, function (_list) {
@@ -50,7 +50,7 @@ exports.findById = function (req, res) {
     response['result'] = dish;
     res.status(200).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 

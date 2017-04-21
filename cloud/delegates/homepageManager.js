@@ -1,7 +1,7 @@
 var _ = require('underscore');
-var restaurant_assembler = require('../assemblers/restaurant');
 var Restaurant = Parse.Object.extend('Restaurant');
-var error_handler = require('../error_handler');
+var restaurantAssembler = require('../assemblers/restaurant');
+var errorHandler = require('../errorHandler');
 
 exports.getHomePage = function (req, res) {
   var longitude = parseFloat(req.query.lon);
@@ -102,7 +102,7 @@ exports.getRecommendations = function (req, res) {
     response['homepagesections'] = recommendations;
     res.status(200).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 
@@ -179,7 +179,7 @@ function assembleRecommendation(restaurants, title, placement, latitude, longitu
   console.log(latitude);
   console.log(longitude);
   _.each(restaurants, function (restaurant) {
-    var result = restaurant_assembler.assemble(restaurant, latitude, longitude);
+    var result = restaurantAssembler.assemble(restaurant, latitude, longitude);
     results.push(result);
   });
   recommendation['results'] = results;

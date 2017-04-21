@@ -1,6 +1,6 @@
 var _ = require('underscore');
-var favorite_assembler = require('../assemblers/favorite');
-var error_handler = require('../error_handler');
+var favoriteAssembler = require('../assemblers/favorite');
+var errorHandler = require('../errorHandler');
 
 var Favorite = Parse.Object.extend('Favorite');
 var Restaurant = Parse.Object.extend('Restaurant');
@@ -15,12 +15,12 @@ exports.addByUserSession = function (req, res) {
 
   if (user == undefined) {
     var error = new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Invalid session token");
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   }
 
   if (!validateParameters(type)) {
     var error = new Parse.Error(Parse.Error.INVALID_QUERY, "The parameter \'type\' has invalid value");
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   }
 
   var favorite = new Favorite();
@@ -44,12 +44,12 @@ exports.addByUserSession = function (req, res) {
     favorite.set('selected_collection', selectedCollection);
   }
   favorite.save().then(function (result) {
-    var favoriteRes = favorite_assembler.assemble(result);
+    var favoriteRes = favoriteAssembler.assemble(result);
     var response = {};
     response['result'] = favoriteRes;
     res.status(201).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 
 }
@@ -61,12 +61,12 @@ exports.findByUserSession = function (req, res) {
   var user = req.user;
   if (user == undefined) {
     var error = new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Invalid session token");
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   }
 
   if (!validateParameters(type)) {
     var error = new Parse.Error(Parse.Error.INVALID_QUERY, "The parameter \'type\' has invalid value");
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   }
 
   var query = new Parse.Query(Favorite);
@@ -85,7 +85,7 @@ exports.findByUserSession = function (req, res) {
     var favorites = [];
     if (results != undefined && results.length > 0) {
       _.each(results, function (result) {
-        var favorite = favorite_assembler.assemble(result, lat, lon);
+        var favorite = favoriteAssembler.assemble(result, lat, lon);
         favorites.push(favorite);
       });
     }
@@ -93,7 +93,7 @@ exports.findByUserSession = function (req, res) {
     response['results'] = favorites;
     res.status(200).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 
 }
@@ -122,7 +122,7 @@ exports.deleteByUserSession = function (req, res) {
   }).then(function () {
     res.status(200).json({});
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 
@@ -132,12 +132,12 @@ exports.checkIsUserFavorite = function (req, res) {
   var objectId = req.query['id']
   if (user == undefined) {
     var error = new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Invalid session token");
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   }
 
   if (!validateParameters(type)) {
     var error = new Parse.Error(Parse.Error.INVALID_QUERY, "The parameter \'type\' has invalid value");
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   }
 
   var query = new Parse.Query(Favorite);
@@ -170,7 +170,7 @@ exports.checkIsUserFavorite = function (req, res) {
     response['result'] = false;
     res.status(200).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 

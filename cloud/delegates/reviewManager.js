@@ -1,12 +1,11 @@
 var _ = require('underscore');
 var Review = Parse.Object.extend('Review');
 var UserActivity = Parse.Object.extend('UserActivity');
-var error_handler = require('../error_handler');
+var errorHandler = require('../errorHandler');
 var Image = Parse.Object.extend('Image');
 var Restaurant = Parse.Object.extend('Restaurant');
-var review_assembler = require('../assemblers/review');
-var fs = require('fs');
-var config = JSON.parse(fs.readFileSync('cloud/config.js'));
+var reviewAssembler = require('../assemblers/review');
+var CONFIG = require('../config.json');
 
 
 // request:
@@ -40,7 +39,7 @@ exports.createReview = function (req, res) {
   review.set('rating', rating);
   var isGoodReview = false;
   var reviewQuality = calculateQuality(content, photos);
-  if (reviewQuality >= config['review']['good_review_threshold']) {
+  if (reviewQuality >= CONFIG.review.good_review_threshold) {
     isGoodReview = true;
   }
   review.set('good_review', isGoodReview);
@@ -53,9 +52,9 @@ exports.createReview = function (req, res) {
   if (user != undefined) {
     review.set('user', user);
     acl.setWriteAccess(user.id, true);
-    var userPoints = config['review']['user_points'];
-    if (reviewQuality >= config['review']['good_review_threshold']) {
-      userPoints = config['review']['good_review_user_points'];
+    var userPoints = CONFIG.review.user_points;
+    if (reviewQuality >= CONFIG.review.good_review_threshold) {
+      userPoints = CONFIG.review.good_review_user_points;
     }
     user.increment('points', userPoints);
   }
@@ -85,18 +84,18 @@ exports.createReview = function (req, res) {
     }
     Parse.Object.saveAll(objectsToSave);
     var response = {};
-    response['result'] = review_assembler.assemble(savedReview);
+    response['result'] = reviewAssembler.assemble(savedReview);
     res.status(201).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 
 }
 
 function calculateQuality(content, photos) {
   var quality = 0;
-  var pictureValue = config['review']['picture_value'];
-  var wordValue = config['review']['word_value'];
+  var pictureValue = CONFIG.review.picture_value;
+  var wordValue = CONFIG.review.word_value;
   console.log(wordValue);
   if (content != undefined) {
     var splitter = ' ';
@@ -139,14 +138,14 @@ exports.listReviews = function (req, res) {
     var response = {};
     var results = [];
     _.each(_reviews, function (_review) {
-      var review = review_assembler.assemble(_review);
+      var review = reviewAssembler.assemble(_review);
       results.push(review);
     });
 
     response['results'] = results;
     res.status(200).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 
@@ -167,7 +166,7 @@ exports.fetchReview = function (req, res) {
   Parse.Promise.when(p1, p2).then(function (_reviews, _photos) {
     if (_reviews != undefined && _reviews.length > 0) {
       console.log(_photos.length);
-      var review = review_assembler.assemble(_reviews[0], _photos);
+      var review = reviewAssembler.assemble(_reviews[0], _photos);
       var response = {};
       response['result'] = review;
       res.status(200).json(response);
@@ -176,6 +175,6 @@ exports.fetchReview = function (req, res) {
     }
 
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }

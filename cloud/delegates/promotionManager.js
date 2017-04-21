@@ -1,10 +1,10 @@
 var Promotion = Parse.Object.extend('Promotion');
 var Restaurant = Parse.Object.extend('Restaurant');
 var _ = require('underscore');
-var promotion_assembler = require('../assemblers/promotion');
-var error_handler = require('../error_handler');
-var image_assembler = require('../assemblers/image');
-var restaurant_assembler = require('../assemblers/restaurant');
+var promotionAssembler = require('../assemblers/promotion');
+var errorHandler = require('../errorHandler');
+var imageAssembler = require('../assemblers/image');
+var restaurantAssembler = require('../assemblers/restaurant');
 
 
 // get promotions from promotions table.
@@ -35,7 +35,7 @@ exports.listAll = function (req, res) {
     if (results != undefined && results.length > 0) {
       _.each(results, function (result) {
         if (result.get('restaurant') != undefined && result.get('restaurant').get('image') != undefined) {
-          var promotion = promotion_assembler.assemble(result, latitude, longitude);
+          var promotion = promotionAssembler.assemble(result, latitude, longitude);
           promotions.push(promotion);
         }
       });
@@ -66,7 +66,7 @@ exports.listAll = function (req, res) {
             if (_.contains(existingIds, restaurant.id) == false) {
               console.log("existingIds contains ".concat(restaurant.id).concat("is considered false"));
               var promotion = {};
-              var rest = restaurant_assembler.assemble(restaurant, latitude, longitude);
+              var rest = restaurantAssembler.assemble(restaurant, latitude, longitude);
               promotion["restaurant"] = rest;
               promotions.push(promotion);
               if (promotions.length == 10) {
@@ -92,7 +92,7 @@ exports.listAll = function (req, res) {
         response['results'] = sortedPromotions;
         res.status(200).json(response);
       }, function (error) {
-        error_handler.handle(error, {}, res);
+        errorHandler.handle(error, {}, res);
       });
     } else {
       var response = {};
@@ -113,6 +113,6 @@ exports.listAll = function (req, res) {
     }
   }, function (error) {
     console.log(error);
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   })
 }

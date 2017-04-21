@@ -2,9 +2,9 @@ var SelectedCollection = Parse.Object.extend('SelectedCollection');
 var RestaurantCollectionMember = Parse.Object.extend('RestaurantCollectionMember');
 var RestaurantCollectionMemCan = Parse.Object.extend('RestaurantCollectionMemCan');
 
-var selectedCollection_assembler = require('../assemblers/selectedCollection');
-var restaurant_assembler = require('../assemblers/restaurant');
-var error_handler = require('../error_handler');
+var selectedCollectionAssembler = require('../assemblers/selectedCollection');
+var restaurantAssembler = require('../assemblers/restaurant');
+var errorHandler = require('../errorHandler');
 var _ = require('underscore');
 
 var COVERAGE_RADIUS = 100;
@@ -14,19 +14,19 @@ exports.findById = function (req, res) {
   var query = new Parse.Query(SelectedCollection);
   query.include('cell_image');
   query.get(id).then(function (_selectedCollection) {
-    var selectedCollection = selectedCollection_assembler.assemble(_selectedCollection);
+    var selectedCollection = selectedCollectionAssembler.assemble(_selectedCollection);
     var response = {};
     response['result'] = selectedCollection;
     res.status(200).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 
 exports.findAllWithCenterAndRadius = function (req, res) {
   if (req.query.lat == undefined || req.query.lon == undefined) {
     var error = new Parse.Error(Parse.Error.INVALID_QUERY, "Please input latitude and longitude");
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   }
   var userLocation = {};
   userLocation['lat'] = req.query.lat;
@@ -40,7 +40,7 @@ exports.findAllWithCenterAndRadius = function (req, res) {
     var results = [];
     if (_selectedCollections != undefined && _selectedCollections.length > 0) {
       _.each(_selectedCollections, function (selectedCollection) {
-        var result = selectedCollection_assembler.assemble(selectedCollection);
+        var result = selectedCollectionAssembler.assemble(selectedCollection);
         results.push(result);
       });
     }
@@ -48,7 +48,7 @@ exports.findAllWithCenterAndRadius = function (req, res) {
     response['results'] = results;
     res.status(200).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 
@@ -64,7 +64,7 @@ exports.findAllRestaurantsMembersById = function (req, res) {
     var restaurants = [];
     if (_restaurantCollectionMembers != undefined && _restaurantCollectionMembers.length > 0) {
       _.each(_restaurantCollectionMembers, function (restaurantCollectionMember) {
-        var restaurant = restaurant_assembler.assemble(restaurantCollectionMember.get('restaurant'));
+        var restaurant = restaurantAssembler.assemble(restaurantCollectionMember.get('restaurant'));
         restaurants.push(restaurant);
       });
     }
@@ -72,7 +72,7 @@ exports.findAllRestaurantsMembersById = function (req, res) {
     response['results'] = restaurants;
     res.status(200).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 
@@ -105,7 +105,7 @@ exports.nominateRestaurant = function (req, res) {
         response["result"] = memCanRes;
         res.status(200).json(response);
       }, function (error) {
-        error_handler.handle(error, {}, res);
+        errorHandler.handle(error, {}, res);
       });
     } else {
       var memCan = new RestaurantCollectionMemCan();
@@ -119,11 +119,11 @@ exports.nominateRestaurant = function (req, res) {
         response["result"] = memCanRes;
         res.status(200).json(response);
       }, function (error) {
-        error_handler.handle(error, {}, res);
+        errorHandler.handle(error, {}, res);
       });
     }
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 

@@ -1,4 +1,4 @@
-var image_assembler = require('./image');
+var imageAssembler = require('./image');
 
 exports.assemble = function(source, lat, lon) {
 	var restaurant = {};
@@ -36,7 +36,7 @@ exports.assemble = function(source, lat, lon) {
 		} else {
 			restaurant['rating'] = 0.0
 		}
-		restaurant['picture'] = image_assembler.assemble(source.get('image'));
+		restaurant['picture'] = imageAssembler.assemble(source.get('image'));
 	}
 	return restaurant; 
 }

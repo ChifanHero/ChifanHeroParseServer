@@ -1,6 +1,6 @@
 var City = Parse.Object.extend('City');
-var error_handler = require('../error_handler');
-var city_assembler = require('../assemblers/city');
+var errorHandler = require('../errorHandler');
+var cityAssembler = require('../assemblers/city');
 var _ = require('underscore');
 
 exports.findCitiesWithPrefix = function (req, res) {
@@ -13,7 +13,7 @@ exports.findCitiesWithPrefix = function (req, res) {
     var cities = [];
     if (results != undefined && results.length > 0) {
       _.each(results, function (result) {
-        var city = city_assembler.assemble(result);
+        var city = cityAssembler.assemble(result);
         cities.push(city);
       });
     }
@@ -21,7 +21,7 @@ exports.findCitiesWithPrefix = function (req, res) {
     response['results'] = cities;
     res.status(200).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 };
 
@@ -35,7 +35,7 @@ exports.getHotCities = function (req, res) {
     var cities = [];
     if (results != undefined && results.length > 0) {
       _.each(results, function (result) {
-        var city = city_assembler.assemble(result);
+        var city = cityAssembler.assemble(result);
         cities.push(city);
       });
     }
@@ -43,6 +43,6 @@ exports.getHotCities = function (req, res) {
     response['results'] = cities;
     res.status(200).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 };

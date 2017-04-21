@@ -3,9 +3,9 @@ var Rating = Parse.Object.extend('Rating');
 var Restaurant = Parse.Object.extend('Restaurant');
 var Dish = Parse.Object.extend('Dish');
 var List = Parse.Object.extend('SelectedCollection');
-var restaurant_assembler = require('../assemblers/restaurant');
+var restaurantAssembler = require('../assemblers/restaurant');
 var rating_assembler = require('../assemblers/rating');
-var error_handler = require('../error_handler');
+var errorHandler = require('../errorHandler');
 
 exports.rateByUserSession = function (req, res) {
   var user = req.user;
@@ -53,19 +53,19 @@ exports.rateByUserSession = function (req, res) {
     response['result'] = ratingRes;
     res.status(201).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 
 function validateParameters(type, action, res) {
   if (type !== 'dish' && type !== 'restaurant' && type !== 'selected_collection') {
     var error = new Parse.Error(Parse.Error.INVALID_QUERY, "The parameter \'type\' is invalid");
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
     return false;
   }
   if (action !== 'like' && action != 'dislike' && action != 'neutral') {
     var error = new Parse.Error(Parse.Error.INVALID_QUERY, "The parameter \'action\' is invalid");
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
     return false;
   }
   return true;
@@ -77,7 +77,7 @@ exports.findByUserSession = function (req, res) {
   var user = req.user;
   if (user == undefined) {
     var error = new Parse.Error(Parse.Error.SESSION_MISSING, "Not able to recoginize the user");
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   } else {
     if (!validateParameters(type, action, res)) {
       return;
@@ -106,7 +106,7 @@ exports.findByUserSession = function (req, res) {
         res.status(200).json(response);
       }
     }, function (error) {
-      error_handler.handle(error, {}, res);
+      errorHandler.handle(error, {}, res);
     });
   }
 

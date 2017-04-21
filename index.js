@@ -6,20 +6,20 @@ var ParseServer = require('parse-server').ParseServer;
 var ParseDashboard = require('parse-dashboard');
 var path = require('path');
 
-var restaurant_manager = require('./cloud/delegates/restaurant_manager');
-var promotion_manager = require('./cloud/delegates/promotion_manager');
-var dish_manager = require('./cloud/delegates/dish_manager');
-var user_manager = require('./cloud/delegates/user_manager');
-var rating_manager = require('./cloud/delegates/rating_manager');
-var favorite_manager = require('./cloud/delegates/favorite_manager');
-var menu_manager = require('./cloud/delegates/menu_manager');
-var image_manager = require('./cloud/delegates/image_manager');
-var selectedCollection_manager = require('./cloud/delegates/selectedCollection_manager');
-var city_manager = require('./cloud/delegates/city_manager');
-var homepage_manager = require('./cloud/delegates/homepage_manager');
-var review_manager = require('./cloud/delegates/review_manager');
-var userActivity_manager = require('./cloud/delegates/userActivity_manager');
-var dish_recommendation_manager = require('./cloud/delegates/dish_recommendation_manager');
+var restaurant_manager = require('./cloud/delegates/restaurantManager');
+var promotion_manager = require('./cloud/delegates/promotionManager');
+var dish_manager = require('./cloud/delegates/dishManager');
+var user_manager = require('./cloud/delegates/userManager');
+var rating_manager = require('./cloud/delegates/ratingManager');
+var favorite_manager = require('./cloud/delegates/favoriteManager');
+var menu_manager = require('./cloud/delegates/menuManager');
+var image_manager = require('./cloud/delegates/imageManager');
+var selectedCollection_manager = require('./cloud/delegates/selectedCollectionManager');
+var city_manager = require('./cloud/delegates/cityManager');
+var homepage_manager = require('./cloud/delegates/homepageManager');
+var review_manager = require('./cloud/delegates/reviewManager');
+var userActivity_manager = require('./cloud/delegates/userActivityManager');
+var dish_recommendation_manager = require('./cloud/delegates/dishRecommendationManager');
 
 var devEnv = {
   dbURI: "mongodb://aws:aws@ds015780.mlab.com:15780/lightning-staging",

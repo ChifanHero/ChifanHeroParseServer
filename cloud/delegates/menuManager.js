@@ -1,8 +1,8 @@
 var MenuItem = Parse.Object.extend('MenuItem');
 var Dish = Parse.Object.extend('Dish');
 var _ = require('underscore');
-var error_handler = require('../error_handler');
-var dish_assembler = require('../assemblers/dish');
+var errorHandler = require('../errorHandler');
+var dishAssembler = require('../assemblers/dish');
 var Restaurant = Parse.Object.extend('Restaurant');
 
 exports.findByRestaurantId = function (req, res) {
@@ -24,11 +24,11 @@ exports.findByRestaurantId = function (req, res) {
           if (menuDic[menuId] != undefined) {
             var menuItem = menuDic[menuId];
             if (menuItem['dishes'] != undefined) {
-              menuItem['dishes'].push(dish_assembler.assemble(result));
+              menuItem['dishes'].push(dishAssembler.assemble(result));
             } else {
               var menuItem = menuDic[menuId];
               var dishes = [];
-              dishes.push(dish_assembler.assemble(result));
+              dishes.push(dishAssembler.assemble(result));
               menuItem['dishes'] = dishes;
             }
           } else {
@@ -36,7 +36,7 @@ exports.findByRestaurantId = function (req, res) {
             menuItem['id'] = menuId;
             menuItem['name'] = menu.get('name');
             var dishes = [];
-            dishes.push(dish_assembler.assemble(result));
+            dishes.push(dishAssembler.assemble(result));
             menuItem['dishes'] = dishes;
             menuDic[menuId] = menuItem;
           }
@@ -47,6 +47,6 @@ exports.findByRestaurantId = function (req, res) {
     response['results'] = _.values(menuDic);
     res.status(200).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }

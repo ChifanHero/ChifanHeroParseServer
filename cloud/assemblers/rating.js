@@ -1,6 +1,6 @@
-var restaurant_assembler = require('./restaurant');
-var dish_assembler = require('./dish');
-var selectedCollection_assembler = require('./selectedCollection');
+var restaurantAssembler = require('./restaurant');
+var dishAssembler = require('./dish');
+var selectedCollectionAssembler = require('./selectedCollection');
 
 exports.assemble = function(source){
 	var rating = {};
@@ -14,15 +14,15 @@ exports.assemble = function(source){
 			rating['user'] = user;
 		}
 		if (source.get('dish') != undefined) {
-			var dish = dish_assembler.assemble(source.get('dish'));
+			var dish = dishAssembler.assemble(source.get('dish'));
 			rating['dish'] = dish;
 		}
 		if (source.get('restaurant') != undefined) {
-			var restaurant = restaurant_assembler.assemble(source.get('restaurant'));
+			var restaurant = restaurantAssembler.assemble(source.get('restaurant'));
 			rating['restaurant'] = restaurant;
 		}
 		if (source.get('selected_collection') != undefined) {
-			var selectedCollection = selectedCollection_assembler.assemble(source.get('selected_collection'));
+			var selectedCollection = selectedCollectionAssembler.assemble(source.get('selected_collection'));
 			rating['selected_collection'] = selectedCollection;
 		}
 	}

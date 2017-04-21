@@ -4,11 +4,11 @@ var Review = Parse.Object.extend('Review');
 var RestaurantCandidate = Parse.Object.extend('RestaurantCandidate');
 var Dish = Parse.Object.extend('Dish');
 var _ = require('underscore');
-var restaurant_assembler = require('../assemblers/restaurant');
-var dish_assembler = require('../assemblers/dish');
-var error_handler = require('../error_handler');
-var image_assembler = require('../assemblers/image');
-var review_assembler = require('../assemblers/review');
+var restaurantAssembler = require('../assemblers/restaurant');
+var dishAssembler = require('../assemblers/dish');
+var errorHandler = require('../errorHandler');
+var imageAssembler = require('../assemblers/image');
+var reviewAssembler = require('../assemblers/review');
 
 exports.listAll = function (req, res) {
   var latitude = req.query['lat'];
@@ -50,7 +50,7 @@ exports.listAll = function (req, res) {
     var response = {};
     var restaurants = [];
     _.each(results, function (result) {
-      var restaurant = restaurant_assembler.assemble(result, latitude, longitude);
+      var restaurant = restaurantAssembler.assemble(result, latitude, longitude);
       restaurants.push(restaurant);
     });
     response['title'] = requestTitle;
@@ -58,7 +58,7 @@ exports.listAll = function (req, res) {
     response['results'] = restaurants;
     res.status(200).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   })
 }
 
@@ -71,11 +71,11 @@ exports.findById = function (req, res) {
   var p3 = findHotReviewsByRestaurantId(id);
   var p4 = findPhotosByRestaurantId(id);
   Parse.Promise.when(p1, p2, p3, p4).then(function (_restaurant, _dishes, _review, _photo) {
-    var restaurant = restaurant_assembler.assemble(_restaurant, latitude, longitude);
+    var restaurant = restaurantAssembler.assemble(_restaurant, latitude, longitude);
     var dishes = [];
     if (_dishes != undefined && _dishes.length > 0) {
       _.each(_dishes, function (_dish) {
-        var dish = dish_assembler.assemble(_dish);
+        var dish = dishAssembler.assemble(_dish);
         dishes.push(dish);
       });
     }
@@ -108,7 +108,7 @@ exports.findById = function (req, res) {
       var reviews = [];
       if (_review['reviews'] != undefined && _review['reviews'].length > 0) {
         _.each(_review['reviews'], function (item) {
-          var review = review_assembler.assemble(item);
+          var review = reviewAssembler.assemble(item);
           reviews.push(review);
         });
       }
@@ -122,7 +122,7 @@ exports.findById = function (req, res) {
       var photos = [];
       if (_photo['photos'] != undefined && _photo['photos'].length > 0) {
         _.each(_photo['photos'], function (item) {
-          var photo = image_assembler.assemble(item);
+          var photo = imageAssembler.assemble(item);
           photos.push(photo);
         });
       }
@@ -134,7 +134,7 @@ exports.findById = function (req, res) {
     res.status(200).json(response);
 
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 
@@ -164,7 +164,7 @@ exports.vote = function (req, res) {
             response['result'] = created;
             res.status(200).json(response);
           }, function (error) {
-            error_handler.handle(error, {}, res);
+            errorHandler.handle(error, {}, res);
           });
         } else {
           var existingCandidate = candidates[0];
@@ -177,11 +177,11 @@ exports.vote = function (req, res) {
             response['result'] = created;
             res.status(200).json(response);
           }, function (error) {
-            error_handler.handle(error, {}, res);
+            errorHandler.handle(error, {}, res);
           });
         }
       }, function (error) {
-        error_handler.handle(error, {}, res);
+        errorHandler.handle(error, {}, res);
       });
     }, function () {
       var error = {};
@@ -215,15 +215,15 @@ exports.rate = function (req, res) {
     _restaurant.increment('neutral_count', neutral);
     _restaurant.increment('rating_total', like + dislike + neutral);
     _restaurant.save().then(function (_restaurant) {
-      var restaurantRes = restaurant_assembler.assemble(_restaurant);
+      var restaurantRes = restaurantAssembler.assemble(_restaurant);
       var response = {};
       response['result'] = restaurantRes;
       res.status(200).json(response);
     }, function (error) {
-      error_handler.handle(error, {}, res);
+      errorHandler.handle(error, {}, res);
     });
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 
@@ -308,17 +308,17 @@ exports.update = function (req, res) {
     restaurant.set('image', picture)
   }
   restaurant.save().then(function (_restaurant) {
-    var restaurant = restaurant_assembler.assemble(_restaurant);
+    var restaurant = restaurantAssembler.assemble(_restaurant);
     var image = _restaurant.get('image');
     if (image != undefined) {
       image.fetch().then(function (_image) {
-        var imageRes = image_assembler.assemble(_image);
+        var imageRes = imageAssembler.assemble(_image);
         var response = {};
         restaurant['picture'] = imageRes;
         response['result'] = restaurant;
         res.status(200).json(response);
       }, function (error) {
-        error_handler.handle(error, {}, res);
+        errorHandler.handle(error, {}, res);
       });
     } else {
       var response = {};
@@ -326,6 +326,6 @@ exports.update = function (req, res) {
       res.status(200).json(response);
     }
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }

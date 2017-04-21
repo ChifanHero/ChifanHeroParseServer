@@ -1,6 +1,6 @@
-var user_assembler = require('../assemblers/user');
-var image_assembler = require('../assemblers/image');
-var error_handler = require('../error_handler');
+var userAssembler = require('../assemblers/user');
+var imageAssembler = require('../assemblers/image');
+var errorHandler = require('../errorHandler');
 var Buffer = require('buffer').Buffer;
 var _ = require('underscore');
 
@@ -26,7 +26,7 @@ exports.oauthLogIn = function (req, res) {
     response['success'] = true;
     response['session_token'] = user.getSessionToken();
 
-    var userRes = user_assembler.assemble(user);
+    var userRes = userAssembler.assemble(user);
     response['user'] = userRes;
     res.status(200).json(response);
   });
@@ -118,11 +118,11 @@ exports.logIn = function (req, res) {
     var response = {};
     response['success'] = true;
     response['session_token'] = _user.getSessionToken();
-    var user = user_assembler.assemble(_user);
+    var user = userAssembler.assemble(_user);
     var picture = _user.get('picture');
     if (picture != undefined) {
       picture.fetch().then(function (_picture) {
-        var picture = image_assembler.assemble(_picture);
+        var picture = imageAssembler.assemble(_picture);
         user['picture'] = picture;
         response['user'] = user;
         res.status(200).json(response);
@@ -135,7 +135,7 @@ exports.logIn = function (req, res) {
       res.status(200).json(response);
     }
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 
@@ -178,24 +178,24 @@ exports.signUp = function (req, res) {
     response['success'] = true;
     response['session_token'] = _user.getSessionToken();
 
-    var userRes = user_assembler.assemble(_user);
+    var userRes = userAssembler.assemble(_user);
     var picture = _user.get('picture');
 
     if (picture != undefined) {
       picture.fetch().then(function (_picture) {
-        var picture = image_assembler.assemble(_picture);
+        var picture = imageAssembler.assemble(_picture);
         userRes['picture'] = picture;
         response['user'] = userRes;
         res.status(200).json(response);
       }, function (error) {
-        error_handler.handle(error, {}, res);
+        errorHandler.handle(error, {}, res);
       });
     } else {
       response['user'] = userRes;
       res.status(200).json(response);
     }
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 
 }
@@ -226,23 +226,23 @@ exports.update = function (req, res) {
     response['success'] = true;
 
     var userRes = {};
-    userRes = user_assembler.assemble(_user);
+    userRes = userAssembler.assemble(_user);
     var picture = _user.get('picture');
     if (picture != undefined) {
       picture.fetch().then(function (_picture) {
-        var pictureRes = image_assembler.assemble(_picture);
+        var pictureRes = imageAssembler.assemble(_picture);
         userRes['picture'] = pictureRes;
         response['user'] = userRes;
         res.status(200).json(response);
       }, function (error) {
-        error_handler.handle(error, {}, res);
+        errorHandler.handle(error, {}, res);
       });
     } else {
       response['user'] = userRes;
       res.status(200).json(response);
     }
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 
@@ -254,7 +254,7 @@ exports.logOut = function (req, res) {
     response['success'] = true;
     res.status(200).json(response);
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 
