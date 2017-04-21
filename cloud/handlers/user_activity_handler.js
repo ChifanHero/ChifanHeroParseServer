@@ -16,14 +16,14 @@
 // 						pointsRewarded = config['review']['good_review_user_points'];
 // 					}
 // 					user.fetch().then(function(_user) {
-						
+
 // 					});
 // 				}
-				
+
 // 			}, function() {
 
 // 			});
 // 		}
-		
+
 // 	}
 // });
