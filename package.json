@@ -17,8 +17,14 @@
     "parse-dashboard": "latest",
     "sharp": "latest"
   },
+  "devDependencies": {
+    "chai": "latest",
+    "chai-http": "latest",
+    "mocha": "latest"
+  },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "mocha"
   },
   "engines": {
     "node": ">=4.3"

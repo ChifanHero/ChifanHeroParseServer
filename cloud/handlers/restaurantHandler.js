@@ -9,6 +9,11 @@ var _Image = Parse.Object.extend('Image');
 
 Parse.Cloud.beforeSave('Restaurant', function (request, response) {
   var restaurantToSave = request.object;
+  if (restaurantToSave.isNew()) {
+    response.success();
+    return;
+  }
+
   if (restaurantToSave.dirty('like_count') || restaurantToSave.dirty('neutral_count') || restaurantToSave.dirty('dislike_count')) {
     var oldRestaurant = new Restaurant();
     oldRestaurant.set("objectId", restaurantToSave.id);
