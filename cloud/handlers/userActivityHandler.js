@@ -1,5 +1,5 @@
 // var fs = require('fs');
-// var config = JSON.parse(fs.readFileSync('cloud/config.js'));
+// var config = JSON.parse(fs.readFileSync('cloud/config.json'));
 
 // Parse.Cloud.afterSave('UserActivity', function(request){
 // 	var userActivity = request.object;
@@ -16,14 +16,14 @@
 // 						pointsRewarded = config['review']['good_review_user_points'];
 // 					}
 // 					user.fetch().then(function(_user) {
-						
+
 // 					});
 // 				}
-				
+
 // 			}, function() {
 
 // 			});
 // 		}
-		
+
 // 	}
 // });

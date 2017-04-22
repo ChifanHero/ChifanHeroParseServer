@@ -1,4 +1,4 @@
-var image_assembler = require('./image');
+var imageAssembler = require('./image');
 
 exports.assemble = function(source) {
 	var user = {};
@@ -7,8 +7,7 @@ exports.assemble = function(source) {
 		user['username'] = source.get('username');
 		user['nick_name'] = source.get('nick_name');
 		user['email'] = source.get('email');
-		console.log(source.get('picture'));
-		user['picture'] = image_assembler.assemble(source.get('picture'));
+		user['picture'] = imageAssembler.assemble(source.get('picture'));
 	}
 	return user;
 }

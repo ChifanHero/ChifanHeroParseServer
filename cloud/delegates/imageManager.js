@@ -1,6 +1,6 @@
 var _ = require('underscore');
-var image_assembler = require('../assemblers/image');
-var error_handler = require('../error_handler');
+var imageAssembler = require('../assemblers/image');
+var errorHandler = require('../errorHandler');
 var UserActivity = Parse.Object.extend('UserActivity');
 var Image = Parse.Object.extend('Image');
 var sharp = require('sharp');
@@ -43,12 +43,12 @@ exports.uploadImage = function (req, res) {
         user.increment('points', userPoints);
         user.save();
       }
-      var imageRes = image_assembler.assemble(newImage);
+      var imageRes = imageAssembler.assemble(newImage);
       var response = {};
       response['result'] = imageRes;
       res.status(200).json(response);
     }, function (error) {
-      error_handler.handle(error, {}, res);
+      errorHandler.handle(error, {}, res);
     });
   });
 }
@@ -66,7 +66,7 @@ exports.findAllByRestaurantId = function (req, res) {
     var results = [];
     if (images != undefined && images.length > 0) {
       _.each(images, function (image) {
-        var result = image_assembler.assemble(image);
+        var result = imageAssembler.assemble(image);
         results.push(result);
       });
     }
@@ -74,7 +74,7 @@ exports.findAllByRestaurantId = function (req, res) {
     response['results'] = results;
     res.status(200).json(response)
   }, function (error) {
-    error_handler.handle(error, {}, res);
+    errorHandler.handle(error, {}, res);
   });
 }
 

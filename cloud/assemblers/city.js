@@ -19,7 +19,6 @@ exports.assemble = function(source) {
 		} else {
 			city['activated'] = false
 		}
-		
 	}
 	return city; 
 }

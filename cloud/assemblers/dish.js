@@ -1,5 +1,5 @@
-var image_assembler = require('./image');
-var restaurant_assembler = require('./restaurant');
+var imageAssembler = require('./image');
+var restaurantAssembler = require('./restaurant');
 
 exports.assemble = function(source) {
 	var dish = {};
@@ -11,8 +11,8 @@ exports.assemble = function(source) {
 		dish['like_count'] = source.get('like_count');
 		dish['dislike_count'] = source.get('dislike_count');
 		dish['neutral_count'] = source.get('neutral_count');
-		dish['picture'] = image_assembler.assemble(source.get('image'));
-		dish['from_restaurant'] = restaurant_assembler.assemble(source.get('from_restaurant'));
+		dish['picture'] = imageAssembler.assemble(source.get('image'));
+		dish['from_restaurant'] = restaurantAssembler.assemble(source.get('from_restaurant'));
 	}
 	return dish;
 }

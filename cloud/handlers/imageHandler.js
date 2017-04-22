@@ -21,12 +21,12 @@ Parse.Cloud.beforeDelete('Image', function (request, response) {
 
   var requestOptionOfOriginal = createRequestOption(originalName);
   var requestOptionOfThumbnail = createRequestOption(thumbnailName);
-  
+
   var p1 = deleteImage(requestOptionOfOriginal);
   var p2 = deleteImage(requestOptionOfThumbnail);
-  
-  Parse.Promise.when(p1, p2).then(function(originalResponse, thumbnailResponse){
-    if(originalResponse.status < 300 && thumbnailResponse.status < 300) {
+
+  Parse.Promise.when(p1, p2).then(function (originalResponse, thumbnailResponse) {
+    if (originalResponse.status < 300 && thumbnailResponse.status < 300) {
       response.success();
     } else {
       response.error("Image deletion failed: " + imageToBeDeleted.id);
