@@ -8,6 +8,11 @@ var Dish = Parse.Object.extend('Dish');
 var SelectedCollection = Parse.Object.extend('SelectedCollection');
 
 
+/**
+ * Add favorite for user
+ * @param req
+ * @param res
+ */
 exports.addByUserSession = function (req, res) {
   var user = req.user;
   var type = req.body['type'];
@@ -15,12 +20,12 @@ exports.addByUserSession = function (req, res) {
 
   if (user == undefined) {
     var error = new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Invalid session token");
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   }
 
   if (!validateParameters(type)) {
     var error = new Parse.Error(Parse.Error.INVALID_QUERY, "The parameter \'type\' has invalid value");
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   }
 
   var favorite = new Favorite();
@@ -49,11 +54,16 @@ exports.addByUserSession = function (req, res) {
     response['result'] = favoriteRes;
     res.status(201).json(response);
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 
 }
 
+/**
+ * Find favorite by user
+ * @param req
+ * @param res
+ */
 exports.findByUserSession = function (req, res) {
   var type = req.query['type'];
   var lat = parseFloat(req.query['lat']);
@@ -61,12 +71,12 @@ exports.findByUserSession = function (req, res) {
   var user = req.user;
   if (user == undefined) {
     var error = new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Invalid session token");
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   }
 
   if (!validateParameters(type)) {
     var error = new Parse.Error(Parse.Error.INVALID_QUERY, "The parameter \'type\' has invalid value");
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   }
 
   var query = new Parse.Query(Favorite);
@@ -93,11 +103,16 @@ exports.findByUserSession = function (req, res) {
     response['results'] = favorites;
     res.status(200).json(response);
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 
 }
 
+/**
+ * Delete favorite by user
+ * @param req
+ * @param res
+ */
 exports.deleteByUserSession = function (req, res) {
   var user = req.user;
   var type = req.body['type'];
@@ -122,22 +137,27 @@ exports.deleteByUserSession = function (req, res) {
   }).then(function () {
     res.status(200).json({});
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }
 
+/**
+ * Check whether favorite belongs to user
+ * @param req
+ * @param res
+ */
 exports.checkIsUserFavorite = function (req, res) {
   var user = req.user
   var type = req.query['type']
   var objectId = req.query['id']
   if (user == undefined) {
     var error = new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Invalid session token");
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   }
 
   if (!validateParameters(type)) {
     var error = new Parse.Error(Parse.Error.INVALID_QUERY, "The parameter \'type\' has invalid value");
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   }
 
   var query = new Parse.Query(Favorite);
@@ -170,7 +190,7 @@ exports.checkIsUserFavorite = function (req, res) {
     response['result'] = false;
     res.status(200).json(response);
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }
 

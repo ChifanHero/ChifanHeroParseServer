@@ -12,7 +12,6 @@ var dish_manager = require('./cloud/delegates/dishManager');
 var user_manager = require('./cloud/delegates/userManager');
 var rating_manager = require('./cloud/delegates/ratingManager');
 var favorite_manager = require('./cloud/delegates/favoriteManager');
-var menu_manager = require('./cloud/delegates/menuManager');
 var image_manager = require('./cloud/delegates/imageManager');
 var selectedCollection_manager = require('./cloud/delegates/selectedCollectionManager');
 var city_manager = require('./cloud/delegates/cityManager');
@@ -100,12 +99,11 @@ app.get('/test', function (req, res) {
 //GET
 
 app.get('/parse/restaurants/:id', restaurant_manager.findById);
-app.get('/parse/restaurants/:id/menus', menu_manager.findByRestaurantId);
 
 
 app.get('/parse/dishes', dish_manager.findByRestaurantId);
 app.get('/parse/dishes/:id', dish_manager.findById);
-app.get('/parse/restaurants', restaurant_manager.listAll);
+app.get('/parse/restaurants', restaurant_manager.findAll);
 
 app.get('/parse/ratings', rating_manager.findByUserSession);
 app.get('/parse/favorites', favorite_manager.findByUserSession);
@@ -120,7 +118,7 @@ app.get('/parse/hotCities', city_manager.getHotCities);
 
 app.get('/parse/images', image_manager.findAllByRestaurantId);
 
-app.get('/parse/homepage', homepage_manager.getRecommendations);
+app.get('/parse/homepage', homepage_manager.getHomePages);
 app.get('/parse/reviews', review_manager.listReviews);
 app.get('/parse/activities', userActivity_manager.listUserActivities);
 app.get('/parse/reviews/:id', review_manager.fetchReview);
@@ -130,7 +128,6 @@ app.get('/parse/promotions', promotion_manager.listAll);
 app.post('/parse/ratings', rating_manager.rateByUserSession);
 app.post('/parse/favorites', favorite_manager.addByUserSession);
 app.post('/parse/images', image_manager.uploadImage);
-app.post('/parse/restaurantCandidates', restaurant_manager.vote);
 
 app.post('/parse/users/oauthLogin', user_manager.oauthLogIn);
 app.post('/parse/users/signUp', user_manager.signUp);

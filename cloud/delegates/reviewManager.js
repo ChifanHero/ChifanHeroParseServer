@@ -87,7 +87,7 @@ exports.createReview = function (req, res) {
     response['result'] = reviewAssembler.assemble(savedReview);
     res.status(201).json(response);
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 
 }
@@ -145,7 +145,7 @@ exports.listReviews = function (req, res) {
     response['results'] = results;
     res.status(200).json(response);
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }
 
@@ -175,6 +175,6 @@ exports.fetchReview = function (req, res) {
     }
 
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }

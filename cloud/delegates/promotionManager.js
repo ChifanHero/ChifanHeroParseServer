@@ -92,7 +92,7 @@ exports.listAll = function (req, res) {
         response['results'] = sortedPromotions;
         res.status(200).json(response);
       }, function (error) {
-        errorHandler.handle(error, {}, res);
+        errorHandler.handle(error, res);
       });
     } else {
       var response = {};
@@ -113,6 +113,6 @@ exports.listAll = function (req, res) {
     }
   }, function (error) {
     console.log(error);
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   })
 }

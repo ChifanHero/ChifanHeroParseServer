@@ -4,14 +4,14 @@ var Dish = Parse.Object.extend('NewDish');
 var errorHandler = require('../errorHandler');
 var Image = Parse.Object.extend('Image');
 var Restaurant = Parse.Object.extend('Restaurant');
-var reviewAssembler = require('../assemblers/review');
 var dishAssembler = require('../assemblers/dish');
 var CONFIG = require('../config.json');
 
-// photo ids
-// dish id, name
-// restaurant id
-// user
+/**
+ * Please skip this feature for now
+ * @param req
+ * @param res
+ */
 exports.createDishRecommendation = function (req, res) {
   var user = req.user;
   var dishId = req.body['dish_id'];
@@ -63,6 +63,6 @@ exports.createDishRecommendation = function (req, res) {
     response['result'] = recommendation;
     res.status(201).json(response);
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }

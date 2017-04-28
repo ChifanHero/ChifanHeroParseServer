@@ -3,7 +3,6 @@ var GOOGLE_GEOCODING_ENDPOINT = 'https://maps.googleapis.com/maps/api/geocode/js
 var Review = Parse.Object.extend('Review');
 var Favorite = Parse.Object.extend('Favorite');
 var Dish = Parse.Object.extend('Dish');
-var Menu = Parse.Object.extend('MenuItem');
 var Restaurant = Parse.Object.extend('Restaurant');
 var _Image = Parse.Object.extend('Image');
 
@@ -62,8 +61,7 @@ Parse.Cloud.beforeSave('Restaurant', function (request, response) {
       }
       response.success();
     }, function (error) {
-      console.log(error);
-      response.success();
+      response.error(error);
     });
   } else if (restaurantToSave.dirty('image')) {
     var oldRestaurant = new Restaurant();
@@ -72,11 +70,9 @@ Parse.Cloud.beforeSave('Restaurant', function (request, response) {
       var image = oldRestaurant.get("image");
       if (image != undefined) {
         var imageId = image.id;
-        console.log("image id is ".concat(imageId));
         var image = new _Image();
         image.id = imageId;
         image.destroy().then(function () {
-          console.log("successfully deleted old image");
           response.success();
         }, function (error) {
           response.success();
@@ -154,7 +150,6 @@ function deleteRelatedRecords(restaurant) {
   var reviewQuery = new Parse.Query(Review);
   var favoriteQuery = new Parse.Query(Favorite);
   var dishQuery = new Parse.Query(Dish);
-  var menuQuery = new Parse.Query(Menu);
   reviewQuery.equalTo('restaurant', restaurant);
   favoriteQuery.equalTo('restaurant', restaurant);
   dishQuery.equalTo('from_restaurant', restaurant);
@@ -177,13 +172,6 @@ function deleteRelatedRecords(restaurant) {
 
     }, function (error) {
       console.error('Error deleting dishes. error is ' + error.code + ': ' + error.message);
-    });
-  });
-  menuQuery.find().then(function (results) {
-    Parse.Object.destroyAll(results).then(function () {
-
-    }, function (error) {
-      console.error('Error deleting menu. error is ' + error.code + ': ' + error.message);
     });
   });
 }

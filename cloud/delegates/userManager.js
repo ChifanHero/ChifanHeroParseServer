@@ -135,7 +135,7 @@ exports.logIn = function (req, res) {
       res.status(200).json(response);
     }
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }
 
@@ -188,14 +188,14 @@ exports.signUp = function (req, res) {
         response['user'] = userRes;
         res.status(200).json(response);
       }, function (error) {
-        errorHandler.handle(error, {}, res);
+        errorHandler.handle(error, res);
       });
     } else {
       response['user'] = userRes;
       res.status(200).json(response);
     }
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 
 }
@@ -235,14 +235,14 @@ exports.update = function (req, res) {
         response['user'] = userRes;
         res.status(200).json(response);
       }, function (error) {
-        errorHandler.handle(error, {}, res);
+        errorHandler.handle(error, res);
       });
     } else {
       response['user'] = userRes;
       res.status(200).json(response);
     }
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }
 
@@ -254,7 +254,7 @@ exports.logOut = function (req, res) {
     response['success'] = true;
     res.status(200).json(response);
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }
 
