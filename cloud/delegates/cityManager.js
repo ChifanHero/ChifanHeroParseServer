@@ -21,7 +21,7 @@ exports.findCitiesWithPrefix = function (req, res) {
     response['results'] = cities;
     res.status(200).json(response);
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 };
 
@@ -43,6 +43,6 @@ exports.getHotCities = function (req, res) {
     response['results'] = cities;
     res.status(200).json(response);
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 };

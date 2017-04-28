@@ -19,14 +19,14 @@ exports.findById = function (req, res) {
     response['result'] = selectedCollection;
     res.status(200).json(response);
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }
 
 exports.findAllWithCenterAndRadius = function (req, res) {
   if (req.query.lat == undefined || req.query.lon == undefined) {
     var error = new Parse.Error(Parse.Error.INVALID_QUERY, "Please input latitude and longitude");
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   }
   var userLocation = {};
   userLocation['lat'] = req.query.lat;
@@ -48,7 +48,7 @@ exports.findAllWithCenterAndRadius = function (req, res) {
     response['results'] = results;
     res.status(200).json(response);
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }
 
@@ -72,7 +72,7 @@ exports.findAllRestaurantsMembersById = function (req, res) {
     response['results'] = restaurants;
     res.status(200).json(response);
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }
 
@@ -105,7 +105,7 @@ exports.nominateRestaurant = function (req, res) {
         response["result"] = memCanRes;
         res.status(200).json(response);
       }, function (error) {
-        errorHandler.handle(error, {}, res);
+        errorHandler.handle(error, res);
       });
     } else {
       var memCan = new RestaurantCollectionMemCan();
@@ -119,11 +119,11 @@ exports.nominateRestaurant = function (req, res) {
         response["result"] = memCanRes;
         res.status(200).json(response);
       }, function (error) {
-        errorHandler.handle(error, {}, res);
+        errorHandler.handle(error, res);
       });
     }
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }
 

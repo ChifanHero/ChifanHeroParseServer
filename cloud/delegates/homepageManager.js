@@ -3,84 +3,7 @@ var Restaurant = Parse.Object.extend('Restaurant');
 var restaurantAssembler = require('../assemblers/restaurant');
 var errorHandler = require('../errorHandler');
 
-exports.getHomePage = function (req, res) {
-  var longitude = parseFloat(req.query.lon);
-  var latitude = parseFloat(req.query.lat);
-
-  var requestOptions = [
-    {
-      method: 'POST',
-      url: 'http://chifanhero.us-east-1.elasticbeanstalk.com/parse/restaurants',
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-        'X-Parse-Application-Id': 'Z6ND8ho1yR4aY3NSq1zNNU0kPc0GDOD1UZJ5rgxM',
-        'X-Parse-Master-Key': 'KheL2NaRmyVKr11LZ7yC0uvMHxNv8RpX389oUf8F'
-      },
-      body: {
-        request_title: "热门餐厅",
-        placement: 0,
-        user_location: {
-          lat: latitude,
-          lon: longitude
-        },
-        limit: 8,
-        skip: 0,
-        sort_by: "hotness",
-        sort_order: "descend"
-      }
-    },
-    {
-      method: 'POST',
-      url: 'http://chifanhero.us-east-1.elasticbeanstalk.com/parse/restaurants',
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-        'X-Parse-Application-Id': 'Z6ND8ho1yR4aY3NSq1zNNU0kPc0GDOD1UZJ5rgxM',
-        'X-Parse-Master-Key': 'KheL2NaRmyVKr11LZ7yC0uvMHxNv8RpX389oUf8F'
-      },
-      body: {
-        request_title: "离您最近",
-        placement: 1,
-        user_location: {
-          lat: latitude,
-          lon: longitude
-        },
-        limit: 8,
-        skip: 0,
-        sort_by: "distance",
-        sort_order: "descend"
-      }
-    }
-  ];
-
-  var homepageSections = [];
-  var responseIndicator = 0;
-
-  for (var index = 0; index < requestOptions.length; index++) {
-    Parse.Cloud.httpRequest(requestOptions[index]).then(function (httpResponse) {
-      // success
-      responseIndicator++;
-      homepageSections.push(httpResponse.data);
-      if (isAllRequestCompleted(responseIndicator, requestOptions.length)) {
-        var response = {};
-        response['homepagesections'] = homepageSections;
-        res.status(200).json(response);
-      }
-    }, function (httpResponse) {
-      // error
-      console.error('Request failed with response code ' + httpResponse.status);
-    });
-  }
-}
-
-var isAllRequestCompleted = function (currentCount, totalCount) {
-  if (currentCount < totalCount) {
-    return false;
-  } else {
-    return true;
-  }
-}
-
-exports.getRecommendations = function (req, res) {
+exports.getHomePages = function (req, res) {
   var longitude = parseFloat(req.query.lon);
   var latitude = parseFloat(req.query.lat);
   var p1 = findNearestRestaurants(10, latitude, longitude);
@@ -102,7 +25,7 @@ exports.getRecommendations = function (req, res) {
     response['homepagesections'] = recommendations;
     res.status(200).json(response);
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }
 

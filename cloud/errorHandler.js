@@ -78,7 +78,8 @@ var ERROR_CODE_MAP = {
   '600': 500
 };
 
-exports.handle = function (error, response, res) {
+exports.handle = function (error, res) {
+  var response = {};
   response['error'] = error;
   var status = 500;
   if (error != undefined) {

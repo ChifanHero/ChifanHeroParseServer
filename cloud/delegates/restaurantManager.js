@@ -10,7 +10,12 @@ var errorHandler = require('../errorHandler');
 var imageAssembler = require('../assemblers/image');
 var reviewAssembler = require('../assemblers/review');
 
-exports.listAll = function (req, res) {
+/**
+ * Find all restaurants satisfying requirements
+ * @param req
+ * @param res
+ */
+exports.findAll = function (req, res) {
   var latitude = req.query['lat'];
   var longitude = req.query['lon'];
   var skip = req.query['skip'];
@@ -20,8 +25,6 @@ exports.listAll = function (req, res) {
   }
   var sortBy = req.query['sort_by'];
   var sortOrder = req.query['sort_order'];
-  var requestTitle = req.query['request_title'];
-  var placement = req.query['placement'];
   var userGeoPoint = undefined;
   if (latitude != undefined && longitude != undefined) {
     userGeoPoint = new Parse.GeoPoint(latitude, longitude);
@@ -53,19 +56,28 @@ exports.listAll = function (req, res) {
       var restaurant = restaurantAssembler.assemble(result, latitude, longitude);
       restaurants.push(restaurant);
     });
-    response['title'] = requestTitle;
-    response['placement'] = placement;
     response['results'] = restaurants;
     res.status(200).json(response);
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   })
 }
 
+/**
+ * Find restaurant by Id including dishes, reviews and photos
+ * @param req
+ * @param res
+ */
 exports.findById = function (req, res) {
   var id = req.params.id;
-  var longitude = parseFloat(req.query.lon);
-  var latitude = parseFloat(req.query.lat);
+  var longitude = undefined;
+  var latitude = undefined;
+  if (req.query.lon != undefined) {
+    longitude = parseFloat(req.query.lon);  
+  }
+  if (req.query.lat != undefined) {
+    latitude = parseFloat(req.query.lat);
+  }
   var p1 = findRestaurantById(id);
   var p2 = findHotDishesByRestaurantId(id);
   var p3 = findHotReviewsByRestaurantId(id);
@@ -77,29 +89,6 @@ exports.findById = function (req, res) {
       _.each(_dishes, function (_dish) {
         var dish = dishAssembler.assemble(_dish);
         dishes.push(dish);
-      });
-    }
-    restaurant['hot_dishes'] = dishes;
-    if (dishes.length == 0) {
-      var candidateQuery = new Parse.Query(RestaurantCandidate);
-      candidateQuery.equalTo('restaurant', _restaurant);
-      candidateQuery.find(function (candidates) {
-        var votes = 0;
-        if (candidates != undefined && candidates.length > 0) {
-          var candidate = candidates[0];
-          if (candidate.get('votes') != undefined && candidate.get('votes') > 0) {
-            votes = candidate.get('votes');
-          }
-        }
-        restaurant['votes'] = votes;
-        var response = {};
-        response['result'] = restaurant;
-        res.status(200).json(response);
-      }, function (error) {
-        restaurant['votes'] = 0;
-        var response = {};
-        response['result'] = restaurant;
-        res.status(200).json(response);
       });
     }
     if (_review != undefined) {
@@ -115,7 +104,6 @@ exports.findById = function (req, res) {
       reviewsContainer['reviews'] = reviews;
       restaurant['review_info'] = reviewsContainer;
     }
-
     if (_photo != undefined) {
       var photosContainer = {};
       photosContainer['total_count'] = _photo['total_count'];
@@ -134,63 +122,15 @@ exports.findById = function (req, res) {
     res.status(200).json(response);
 
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }
 
-exports.vote = function (req, res) {
-  var id = req.body['restaurant_id'];
-  if (id === undefined) {
-    var error = {};
-    error['message'] = 'Please provide restaurant id';
-    res.status(401).json(error);
-    return;
-  } else {
-    var checkQuery = new Parse.Query(Restaurant);
-    checkQuery.get(id).then(function (rest) {
-
-      var candidateQuery = new Parse.Query(RestaurantCandidate);
-      candidateQuery.equalTo('restaurant', rest);
-      candidateQuery.find(function (candidates) {
-        if (candidates.length == 0) {
-          var candidate = new RestaurantCandidate();
-          candidate.set('restaurant', rest);
-          candidate.set('votes', 1);
-          candidate.save().then(function (outcome) {
-            var response = {};
-            var created = {};
-            created['id'] = outcome.id;
-            created['votes'] = outcome.get('votes');
-            response['result'] = created;
-            res.status(200).json(response);
-          }, function (error) {
-            errorHandler.handle(error, {}, res);
-          });
-        } else {
-          var existingCandidate = candidates[0];
-          existingCandidate.increment("votes");
-          existingCandidate.save().then(function (outcome) {
-            var response = {};
-            var created = {};
-            created['id'] = outcome.id;
-            created['votes'] = outcome.get('votes');
-            response['result'] = created;
-            res.status(200).json(response);
-          }, function (error) {
-            errorHandler.handle(error, {}, res);
-          });
-        }
-      }, function (error) {
-        errorHandler.handle(error, {}, res);
-      });
-    }, function () {
-      var error = {};
-      error['message'] = 'restaurant not found';
-      res.status(404).json(error);
-    });
-  }
-}
-
+/**
+ * Rate restaurant with like, neutral and dislike
+ * @param req
+ * @param res
+ */
 exports.rate = function (req, res) {
   var id = req.params.id;
   var like = 0;
@@ -220,10 +160,10 @@ exports.rate = function (req, res) {
       response['result'] = restaurantRes;
       res.status(200).json(response);
     }, function (error) {
-      errorHandler.handle(error, {}, res);
+      errorHandler.handle(error, res);
     });
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }
 
@@ -255,18 +195,14 @@ function findHotReviewsByRestaurantId(id) {
   var restaurant = new Restaurant();
   restaurant.id = id;
   reviewQuery.equalTo('restaurant', restaurant);
-  reviewQuery = new Parse.Query(Review);
-  reviewQuery.equalTo('restaurant', restaurant);
 
   var p1 = reviewQuery.find();
   var p2 = reviewQuery.count();
-  Parse.Promise.when(p1, p2).then(function (reviews, count) {
+  Parse.Promise.when(p1, p2).then(function (_reviews, _count) {
     var result = {};
-    result['reviews'] = reviews;
-    result['total_count'] = count;
+    result['reviews'] = _reviews;
+    result['total_count'] = _count;
     promise.resolve(result);
-  }, function () {
-    promise.reject();
   });
   return promise;
 }
@@ -277,23 +213,23 @@ function findPhotosByRestaurantId(id) {
   var restaurant = new Restaurant();
   restaurant.id = id;
   query.equalTo('restaurant', restaurant);
-  query = new Parse.Query(Image);
-  query.equalTo('restaurant', restaurant);
 
   var p1 = query.find();
   var p2 = query.count();
-  Parse.Promise.when(p1, p2).then(function (photos, count) {
+  Parse.Promise.when(p1, p2).then(function (_photos, _count) {
     var result = {};
-    result['photos'] = photos;
-    result['total_count'] = count;
+    result['photos'] = _photos;
+    result['total_count'] = _count;
     promise.resolve(result);
-  }, function () {
-    promise.reject();
   });
   return promise;
 }
 
-
+/**
+ * Update restaurant by Id. We only update restaurant image for now.
+ * @param req
+ * @param res
+ */
 exports.update = function (req, res) {
   var id = req.params.id;
   var restaurant = new Restaurant();
@@ -318,7 +254,7 @@ exports.update = function (req, res) {
         response['result'] = restaurant;
         res.status(200).json(response);
       }, function (error) {
-        errorHandler.handle(error, {}, res);
+        errorHandler.handle(error, res);
       });
     } else {
       var response = {};
@@ -326,6 +262,60 @@ exports.update = function (req, res) {
       res.status(200).json(response);
     }
   }, function (error) {
-    errorHandler.handle(error, {}, res);
+    errorHandler.handle(error, res);
   });
 }
+
+/*
+ exports.vote = function (req, res) {
+ var id = req.body['restaurant_id'];
+ if (id === undefined) {
+ var error = {};
+ error['message'] = 'Please provide restaurant id';
+ res.status(401).json(error);
+ return;
+ } else {
+ var checkQuery = new Parse.Query(Restaurant);
+ checkQuery.get(id).then(function (rest) {
+
+ var candidateQuery = new Parse.Query(RestaurantCandidate);
+ candidateQuery.equalTo('restaurant', rest);
+ candidateQuery.find(function (candidates) {
+ if (candidates.length == 0) {
+ var candidate = new RestaurantCandidate();
+ candidate.set('restaurant', rest);
+ candidate.set('votes', 1);
+ candidate.save().then(function (outcome) {
+ var response = {};
+ var created = {};
+ created['id'] = outcome.id;
+ created['votes'] = outcome.get('votes');
+ response['result'] = created;
+ res.status(200).json(response);
+ }, function (error) {
+ errorHandler.handle(error, res);
+ });
+ } else {
+ var existingCandidate = candidates[0];
+ existingCandidate.increment("votes");
+ existingCandidate.save().then(function (outcome) {
+ var response = {};
+ var created = {};
+ created['id'] = outcome.id;
+ created['votes'] = outcome.get('votes');
+ response['result'] = created;
+ res.status(200).json(response);
+ }, function (error) {
+ errorHandler.handle(error, res);
+ });
+ }
+ }, function (error) {
+ errorHandler.handle(error, res);
+ });
+ }, function () {
+ var error = {};
+ error['message'] = 'restaurant not found';
+ res.status(404).json(error);
+ });
+ }
+ }*/
