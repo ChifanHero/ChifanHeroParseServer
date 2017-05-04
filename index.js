@@ -7,7 +7,6 @@ var ParseDashboard = require('parse-dashboard');
 var path = require('path');
 
 var restaurant_manager = require('./cloud/delegates/restaurantManager');
-var promotion_manager = require('./cloud/delegates/promotionManager');
 var dish_manager = require('./cloud/delegates/dishManager');
 var user_manager = require('./cloud/delegates/userManager');
 var rating_manager = require('./cloud/delegates/ratingManager');
@@ -122,7 +121,6 @@ app.get('/parse/homepage', homepage_manager.getHomePages);
 app.get('/parse/reviews', review_manager.listReviews);
 app.get('/parse/activities', userActivity_manager.listUserActivities);
 app.get('/parse/reviews/:id', review_manager.fetchReview);
-app.get('/parse/promotions', promotion_manager.listAll);
 
 //POST
 app.post('/parse/ratings', rating_manager.rateByUserSession);

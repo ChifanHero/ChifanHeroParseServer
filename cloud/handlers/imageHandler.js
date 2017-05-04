@@ -35,13 +35,7 @@ Parse.Cloud.beforeDelete('Image', function (request, response) {
 });
 
 function deleteImage(requestOption) {
-  var promise = new Parse.Promise();
-  Parse.Cloud.httpRequest(requestOption).then(function (httpResponse) {
-    promise.resolve(httpResponse);
-  }, function (httpResponse) {
-    promise.resolve(httpResponse);
-  });
-  return promise;
+  return Parse.Cloud.httpRequest(requestOption);
 }
 
 function createRequestOption(fileName) {

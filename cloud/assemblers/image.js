@@ -10,6 +10,9 @@ exports.assemble = function(source){
 		}
 		image['type'] = source.get('type');
 		image['restaurant'] = source.get('restaurant');
+		
+		/* for Google photo api */
+		image['photo_reference'] = source.get('photo_reference');
 	}
 	return image;
 }
