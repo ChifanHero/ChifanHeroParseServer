@@ -1,9 +1,9 @@
-var imageAssembler = require('./image');
-var restaurantAssembler = require('./restaurant');
+const imageAssembler = require('./image');
+const restaurantAssembler = require('./restaurant');
 
 exports.assemble = function(source) {
-	var dish = {};
-	if (source != undefined) {
+  const dish = {};
+	if (source !== undefined) {
 		dish['id'] = source.id;
 		dish['name'] = source.get('name');
 		dish['english_name'] = source.get('english_name');
@@ -15,4 +15,4 @@ exports.assemble = function(source) {
 		dish['from_restaurant'] = restaurantAssembler.assemble(source.get('from_restaurant'));
 	}
 	return dish;
-}
+};

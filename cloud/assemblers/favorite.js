@@ -1,29 +1,26 @@
-var restaurantAssembler = require('./restaurant');
-var dishAssembler = require('./dish');
-var selectedCollectionAssembler = require('./selectedCollection');
+const restaurantAssembler = require('./restaurant');
+const dishAssembler = require('./dish');
+const selectedCollectionAssembler = require('./selectedCollection');
 
 exports.assemble = function(source, lat, lon){
-	var favorite = {};
-	if (source != undefined) {
+  const favorite = {};
+	if (source !== undefined) {
 		favorite['id'] = source.id;
 		favorite['type'] = source.get('type');
-		if (source.get('user') != undefined) {
-			var user = {};
+		if (source.get('user') !== undefined) {
+      const user = {};
 			user['id'] = source.get('user').id;
 			favorite['user'] = user;
 		}
-		if (source.get('dish') != undefined) {
-			var dish = dishAssembler.assemble(source.get('dish'));
-			favorite['dish'] = dish;
+		if (source.get('dish') !== undefined) {
+      favorite['dish'] = dishAssembler.assemble(source.get('dish'));
 		}
-		if (source.get('restaurant') != undefined) {
-			var restaurant = restaurantAssembler.assemble(source.get('restaurant'), lat, lon);
-			favorite['restaurant'] = restaurant;
+		if (source.get('restaurant') !== undefined) {
+      favorite['restaurant'] = restaurantAssembler.assemble(source.get('restaurant'), lat, lon);
 		}
-		if (source.get('selected_collection') != undefined) {
-			var selectedCollection = selectedCollectionAssembler.assemble(source.get('selected_collection'));
-			favorite['selected_collection'] = selectedCollection;
+		if (source.get('selected_collection') !== undefined) {
+      favorite['selected_collection'] = selectedCollectionAssembler.assemble(source.get('selected_collection'));
 		}
 	}
 	return favorite;
-}
+};

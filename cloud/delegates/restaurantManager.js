@@ -234,12 +234,12 @@ function findPhotosByRestaurantId(id) {
  * @param res
  */
 exports.update = function (req, res) {
-  var id = req.params.id;
-  var restaurant = new Restaurant();
+  const id = req.params.id;
+  const restaurant = new Restaurant();
   restaurant.id = id;
-  var imageId = req.body["image_id"];
-  if (imageId != undefined) {
-    var picture = {
+  const imageId = req.body["image_id"];
+  if (imageId !== undefined) {
+    const picture = {
       __type: "Pointer",
       className: "Image",
       objectId: imageId
@@ -247,12 +247,12 @@ exports.update = function (req, res) {
     restaurant.set('image', picture)
   }
   restaurant.save().then(function (_restaurant) {
-    var restaurant = restaurantAssembler.assemble(_restaurant);
-    var image = _restaurant.get('image');
-    if (image != undefined) {
+    const restaurant = restaurantAssembler.assemble(_restaurant);
+    const image = _restaurant.get('image');
+    if (image !== undefined) {
       image.fetch().then(function (_image) {
-        var imageRes = imageAssembler.assemble(_image);
-        var response = {};
+        const imageRes = imageAssembler.assemble(_image);
+        const response = {};
         restaurant['picture'] = imageRes;
         response['result'] = restaurant;
         res.status(200).json(response);
@@ -260,7 +260,7 @@ exports.update = function (req, res) {
         errorHandler.handle(error, res);
       });
     } else {
-      var response = {};
+      const response = {};
       response['result'] = restaurant;
       res.status(200).json(response);
     }
@@ -268,57 +268,3 @@ exports.update = function (req, res) {
     errorHandler.handle(error, res);
   });
 }
-
-/*
- exports.vote = function (req, res) {
- var id = req.body['restaurant_id'];
- if (id === undefined) {
- var error = {};
- error['message'] = 'Please provide restaurant id';
- res.status(401).json(error);
- return;
- } else {
- var checkQuery = new Parse.Query(Restaurant);
- checkQuery.get(id).then(function (rest) {
-
- var candidateQuery = new Parse.Query(RestaurantCandidate);
- candidateQuery.equalTo('restaurant', rest);
- candidateQuery.find(function (candidates) {
- if (candidates.length == 0) {
- var candidate = new RestaurantCandidate();
- candidate.set('restaurant', rest);
- candidate.set('votes', 1);
- candidate.save().then(function (outcome) {
- var response = {};
- var created = {};
- created['id'] = outcome.id;
- created['votes'] = outcome.get('votes');
- response['result'] = created;
- res.status(200).json(response);
- }, function (error) {
- errorHandler.handle(error, res);
- });
- } else {
- var existingCandidate = candidates[0];
- existingCandidate.increment("votes");
- existingCandidate.save().then(function (outcome) {
- var response = {};
- var created = {};
- created['id'] = outcome.id;
- created['votes'] = outcome.get('votes');
- response['result'] = created;
- res.status(200).json(response);
- }, function (error) {
- errorHandler.handle(error, res);
- });
- }
- }, function (error) {
- errorHandler.handle(error, res);
- });
- }, function () {
- var error = {};
- error['message'] = 'restaurant not found';
- res.status(404).json(error);
- });
- }
- }*/

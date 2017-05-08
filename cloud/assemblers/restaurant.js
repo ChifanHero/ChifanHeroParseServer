@@ -15,9 +15,6 @@ exports.assemble = function(source) {
 		restaurant['english_name'] = source.get('english_name');
 		restaurant['address'] = source.get('address');
 		restaurant['favorite_count'] = source.get('favorite_count');
-		restaurant['like_count'] = source.get('like_count');
-		restaurant['dislike_count'] = source.get('dislike_count');
-		restaurant['neutral_count'] = source.get('neutral_count');
 		restaurant['phone'] = source.get('phone');
 		if (source.get('score') !== undefined) {
 			restaurant['rating'] = parseFloat(source.get('score').toFixed(1));

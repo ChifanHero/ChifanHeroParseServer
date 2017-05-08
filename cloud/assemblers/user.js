@@ -1,8 +1,8 @@
-var imageAssembler = require('./image');
+const imageAssembler = require('./image');
 
 exports.assemble = function(source) {
-	var user = {};
-	if (source != undefined) {
+  const user = {};
+	if (source !== undefined) {
 		user['id'] = source.id;
 		user['username'] = source.get('username');
 		user['nick_name'] = source.get('nick_name');
@@ -10,4 +10,4 @@ exports.assemble = function(source) {
 		user['picture'] = imageAssembler.assemble(source.get('picture'));
 	}
 	return user;
-}
+};
