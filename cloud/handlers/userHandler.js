@@ -1,6 +1,5 @@
 var _Image = Parse.Object.extend('Image');
 var fs = require('fs');
-var config = JSON.parse(fs.readFileSync('cloud/config.json'));
 
 Parse.Cloud.beforeSave(Parse.User, function (request, response) {
   var userToSave = request.object;

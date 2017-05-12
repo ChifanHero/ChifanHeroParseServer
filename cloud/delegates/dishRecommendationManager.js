@@ -5,7 +5,6 @@ var errorHandler = require('../errorHandler');
 var Image = Parse.Object.extend('Image');
 var Restaurant = Parse.Object.extend('Restaurant');
 var dishAssembler = require('../assemblers/dish');
-var CONFIG = require('../config.json');
 
 /**
  * Please skip this feature for now

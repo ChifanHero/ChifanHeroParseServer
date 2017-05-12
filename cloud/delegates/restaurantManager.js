@@ -78,7 +78,7 @@ exports.findById = function (req, res) {
   let longitude = undefined;
   let latitude = undefined;
   if (req.query.lon !== undefined) {
-    longitude = parseFloat(req.query.lon);  
+    longitude = parseFloat(req.query.lon);
   }
   if (req.query.lat !== undefined) {
     latitude = parseFloat(req.query.lat);
@@ -130,6 +130,12 @@ exports.findById = function (req, res) {
       restaurant['address'] = restaurantFromGoogle.result.formatted_address;
       restaurant['phone'] = restaurantFromGoogle.result.formatted_phone_number;
       restaurant['rating'] = restaurantFromGoogle.result.rating;
+      for (let i = 0; i < restaurantFromGoogle.result.address_components.length; i++) {
+        if(restaurantFromGoogle.result.address_components[i].types[0] === 'locality') {
+          restaurant['city'] = restaurantFromGoogle.result.address_components[i].long_name;
+          break;
+        }
+      }
       if (restaurantFromGoogle.result.photos !== undefined && restaurantFromGoogle.result.photos.length > 0) {
         _.each(restaurantFromGoogle.result.photos, item => {
           restaurant['photo_info']['photos'].push(googlePhotoAssember.assemble(item));

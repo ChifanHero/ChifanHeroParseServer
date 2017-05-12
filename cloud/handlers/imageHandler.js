@@ -1,12 +1,12 @@
 "use strict";
 
 Parse.Cloud.afterSave('Image', function (request) {
-  var imageSaved = request.object;
-  var restaurant = imageSaved.get('restaurant');
-  if (restaurant != undefined) {
+  const imageSaved = request.object;
+  const restaurant = imageSaved.get('restaurant');
+  if (restaurant !== undefined) {
     restaurant.fetch().then(function (restaurant) {
       console.log(restaurant);
-      if (restaurant.get('image') == undefined) {
+      if (restaurant.get('image') === undefined) {
         restaurant.set('image', imageSaved);
         restaurant.save();
       }
@@ -15,15 +15,15 @@ Parse.Cloud.afterSave('Image', function (request) {
 });
 
 Parse.Cloud.beforeDelete('Image', function (request, response) {
-  var imageToBeDeleted = request.object;
-  var originalName = imageToBeDeleted.get('original').name();
-  var thumbnailName = imageToBeDeleted.get('thumbnail').name();
+  const imageToBeDeleted = request.object;
+  const originalName = imageToBeDeleted.get('original').name();
+  const thumbnailName = imageToBeDeleted.get('thumbnail').name();
 
-  var requestOptionOfOriginal = createRequestOption(originalName);
-  var requestOptionOfThumbnail = createRequestOption(thumbnailName);
+  const requestOptionOfOriginal = createRequestOption(originalName);
+  const requestOptionOfThumbnail = createRequestOption(thumbnailName);
 
-  var p1 = deleteImage(requestOptionOfOriginal);
-  var p2 = deleteImage(requestOptionOfThumbnail);
+  const p1 = deleteImage(requestOptionOfOriginal);
+  const p2 = deleteImage(requestOptionOfThumbnail);
 
   Parse.Promise.when(p1, p2).then(function (originalResponse, thumbnailResponse) {
     if (originalResponse.status < 300 && thumbnailResponse.status < 300) {
@@ -39,7 +39,7 @@ function deleteImage(requestOption) {
 }
 
 function createRequestOption(fileName) {
-  var requestOption = {};
+  let requestOption = {};
   if (process.env.NODE_ENV === "production") {
     requestOption = {
       method: 'DELETE',

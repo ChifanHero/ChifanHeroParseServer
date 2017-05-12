@@ -1,7 +1,8 @@
+'use strict';
+
 const userAssembler = require('./user');
 const imageAssembler = require('./image');
 const restaurantAssembler = require('./restaurant');
-const CONFIG = require('../config.json');
 const _ = require('underscore');
 
 exports.assemble = function(source, photos) {
@@ -12,24 +13,13 @@ exports.assemble = function(source, photos) {
 		review['last_update_time'] = source.updatedAt;
 		review['rating'] = source.get('rating');
 		review['user'] = userAssembler.assemble(source.get('user'));
-    const reviewQuality = source.get('review_quality');
-		review['review_quality'] = reviewQuality;
-		review['good_review'] = source.get('good_review');
-		if (review['user']['id'] !== undefined) {
-      let pointsRewarded = CONFIG.review.user_points;
-			if (reviewQuality >= CONFIG.review.good_review_threshold) {
-				pointsRewarded = CONFIGreview.good_review_user_points;
-			}
-			review['points_rewarded'] = pointsRewarded;
-		}
 		if (photos !== undefined && photos.length > 0) {
-      const _photos = [];
-			_.each(photos, function(_photo){
-        const photo = imageAssembler.assemble(_photo);
-				_photos.push(photo);
+      const assembledPhotoList = [];
+			_.each(photos, function(photo){
+        const assembledPhoto = imageAssembler.assemble(photo);
+        assembledPhotoList.push(assembledPhoto);
 			});
-			review['photos'] = _photos;
-
+			review['photos'] = assembledPhotoList;
 		}
 		review['restaurant'] = restaurantAssembler.assemble(source.get('restaurant'));
 	}
