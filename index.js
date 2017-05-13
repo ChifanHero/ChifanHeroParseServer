@@ -1,36 +1,33 @@
+'use strict';
 
-'use strict'
+const express = require('express');
+const ParseServer = require('parse-server').ParseServer;
+const ParseDashboard = require('parse-dashboard');
+const path = require('path');
 
-var express = require('express');
-var ParseServer = require('parse-server').ParseServer;
-var ParseDashboard = require('parse-dashboard');
-var path = require('path');
+const restaurant_manager = require('./cloud/delegates/restaurantManager');
+const dish_manager = require('./cloud/delegates/dishManager');
+const user_manager = require('./cloud/delegates/userManager');
+const favorite_manager = require('./cloud/delegates/favoriteManager');
+const image_manager = require('./cloud/delegates/imageManager');
+const selectedCollection_manager = require('./cloud/delegates/selectedCollectionManager');
+const city_manager = require('./cloud/delegates/cityManager');
+const homepage_manager = require('./cloud/delegates/homepageManager');
+const review_manager = require('./cloud/delegates/reviewManager');
+const userActivity_manager = require('./cloud/delegates/userActivityManager');
+const dish_recommendation_manager = require('./cloud/delegates/dishRecommendationManager');
 
-var restaurant_manager = require('./cloud/delegates/restaurantManager');
-var promotion_manager = require('./cloud/delegates/promotionManager');
-var dish_manager = require('./cloud/delegates/dishManager');
-var user_manager = require('./cloud/delegates/userManager');
-var rating_manager = require('./cloud/delegates/ratingManager');
-var favorite_manager = require('./cloud/delegates/favoriteManager');
-var image_manager = require('./cloud/delegates/imageManager');
-var selectedCollection_manager = require('./cloud/delegates/selectedCollectionManager');
-var city_manager = require('./cloud/delegates/cityManager');
-var homepage_manager = require('./cloud/delegates/homepageManager');
-var review_manager = require('./cloud/delegates/reviewManager');
-var userActivity_manager = require('./cloud/delegates/userActivityManager');
-var dish_recommendation_manager = require('./cloud/delegates/dishRecommendationManager');
-
-var devEnv = {
+const devEnv = {
   dbURI: "mongodb://aws:aws@ds015780.mlab.com:15780/lightning-staging",
   appId: "28BX7btLUKGGsFGCSyGGv9Pzj1nCWDl9EV6GpMBQ",
   masterKey: "rj0pEKLhfWX8310qDj9s0rUEAo4ukQJrTNtCP11j",
   serverURL: "http://localhost:1337/parse",
   fileKey: "b0e50b64-fcb1-41db-8a0d-96a8e5de542d",
   appName: "ChifanHero-Staging"
-}
-var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
+};
+const databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 
-var api = new ParseServer({
+const api = new ParseServer({
   databaseURI: databaseUri || devEnv.dbURI,
   cloud: process.env.CLOUD_CODE_MAIN || __dirname + '/cloud/main.js',
   appId: process.env.APP_ID || devEnv.appId,
@@ -42,7 +39,7 @@ var api = new ParseServer({
   }
 });
 
-var dashboard = new ParseDashboard({
+const dashboard = new ParseDashboard({
   "apps": [
     {
       "serverURL": process.env.SERVER_URL || devEnv.serverURL,
@@ -56,16 +53,16 @@ var dashboard = new ParseDashboard({
 // If you wish you require them, you can set them as options in the initialization above:
 // javascriptKey, restAPIKey, dotNetKey, clientKey
 
-var app = express();
+const app = express();
 
 // Serve static assets from the /public folder
 app.use('/public', express.static(path.join(__dirname, '/public')));
 
 // Serve the Parse API on the /parse URL prefix
-var mountPath = process.env.PARSE_MOUNT || '/parse';
+const mountPath = process.env.PARSE_MOUNT || '/parse';
 app.use(mountPath, api);
 app.use(mountPath, function (req, res, next) {
-  var sessionToken = req.get("User-Session");
+  const sessionToken = req.get("User-Session");
   if (sessionToken === undefined) {
     next();
   } else {
@@ -73,7 +70,7 @@ app.use(mountPath, function (req, res, next) {
       req.user = user;
       next();
     }, function (error) {
-      var validationError = {};
+      const validationError = {};
       validationError.message = error.message;
       validationError.code = error.code;
       res.status(401).json(validationError);
@@ -105,7 +102,6 @@ app.get('/parse/dishes', dish_manager.findByRestaurantId);
 app.get('/parse/dishes/:id', dish_manager.findById);
 app.get('/parse/restaurants', restaurant_manager.findAll);
 
-app.get('/parse/ratings', rating_manager.findByUserSession);
 app.get('/parse/favorites', favorite_manager.findByUserSession);
 app.get('/parse/isFavorite', favorite_manager.checkIsUserFavorite);
 
@@ -119,13 +115,11 @@ app.get('/parse/hotCities', city_manager.getHotCities);
 app.get('/parse/images', image_manager.findAllByRestaurantId);
 
 app.get('/parse/homepage', homepage_manager.getHomePages);
-app.get('/parse/reviews', review_manager.listReviews);
+app.get('/parse/reviews', review_manager.findAllReviews);
 app.get('/parse/activities', userActivity_manager.listUserActivities);
 app.get('/parse/reviews/:id', review_manager.fetchReview);
-app.get('/parse/promotions', promotion_manager.listAll);
 
 //POST
-app.post('/parse/ratings', rating_manager.rateByUserSession);
 app.post('/parse/favorites', favorite_manager.addByUserSession);
 app.post('/parse/images', image_manager.uploadImage);
 
@@ -144,8 +138,8 @@ app.put('/parse/restaurantCollectionMemCan', selectedCollection_manager.nominate
 //DELETE
 app.delete('/parse/favorites', favorite_manager.deleteByUserSession);
 
-var port = process.env.PORT || 1337;
-var httpServer = require('http').createServer(app);
+const port = process.env.PORT || 1337;
+const httpServer = require('http').createServer(app);
 httpServer.listen(port, function () {
   console.log('parse-server-production running on port ' + port + '.');
 });

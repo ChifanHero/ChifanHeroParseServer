@@ -2,7 +2,6 @@ var _ = require('underscore');
 var UserActivity = Parse.Object.extend('UserActivity');
 var errorHandler = require('../errorHandler');
 var activityAssembler = require('../assemblers/userActivity');
-var CONFIG = require('../config.json');
 
 exports.listUserActivities = function (req, res) {
   var userId = req.params['user_id'];

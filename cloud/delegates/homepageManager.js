@@ -1,50 +1,55 @@
-var _ = require('underscore');
-var Restaurant = Parse.Object.extend('Restaurant');
-var restaurantAssembler = require('../assemblers/restaurant');
-var errorHandler = require('../errorHandler');
+'use strict';
+
+const _ = require('underscore');
+const Restaurant = Parse.Object.extend('Restaurant');
+const restaurantAssembler = require('../assemblers/restaurant');
+const errorHandler = require('../errorHandler');
 
 exports.getHomePages = function (req, res) {
-  var longitude = parseFloat(req.query.lon);
-  var latitude = parseFloat(req.query.lat);
-  var p1 = findNearestRestaurants(10, latitude, longitude);
-  var p2 = findRecomendedRestaurants(5, latitude, longitude);
-  var p3 = findHotestRestaurants(15, latitude, longitude);
-  var response = {};
+  if (req.query.lat === undefined || req.query.lon === undefined) {
+    const error = new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, "Parameters lat and lon are required");
+    errorHandler.handle(error, res);
+  }
+  const latitude = parseFloat(req.query.lat);
+  const longitude = parseFloat(req.query.lon);
+  const p1 = findNearestRestaurants(10, latitude, longitude);
+  const p2 = findRecomendedRestaurants(5, latitude, longitude);
+  const p3 = findHotestRestaurants(15, latitude, longitude);
+  const response = {};
   Parse.Promise.when(p1, p2, p3).then(function (nearest, recommended, hottest) {
-    var recommendations = [];
-    var placement = 0;
+    const homepageSections = [];
+    let placement = 0;
     if (recommended.length >= 3) {
-      recommendations.push(assembleRecommendation(recommended, "英雄推荐", placement, latitude, longitude));
+      homepageSections.push(assembleResults(recommended, "英雄推荐", placement, latitude, longitude));
       nearest = dedupe(nearest, recommended);
       hottest = dedupe(hottest, recommended.concat(nearest));
       placement++;
     }
-    recommendations.push(assembleRecommendation(hottest, "热门餐厅", placement, latitude, longitude));
+    homepageSections.push(assembleResults(hottest, "热门餐厅", placement, latitude, longitude));
     placement++;
-    recommendations.push(assembleRecommendation(nearest, "离您最近", placement, latitude, longitude));
-    response['homepagesections'] = recommendations;
+    homepageSections.push(assembleResults(nearest, "离您最近", placement, latitude, longitude));
+    response['homepagesections'] = homepageSections;
     res.status(200).json(response);
   }, function (error) {
     errorHandler.handle(error, res);
   });
-}
+};
 
 // nearest
 function findNearestRestaurants(limit, latitude, longitude) {
-  var promise = new Parse.Promise();
-  var query = new Parse.Query(Restaurant);
+  const promise = new Parse.Promise();
+  const query = new Parse.Query(Restaurant);
   query.include('image');
-  if (limit != undefined) {
+  if (limit !== undefined) {
     query.limit(limit);
   }
-  if (latitude != undefined && longitude != undefined) {
-    userGeoPoint = new Parse.GeoPoint(latitude, longitude);
-    query.near("coordinates", userGeoPoint);
-  }
+  const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
+  query.near("coordinate", userGeoPoint);
+
   query.find().then(function (results) {
     promise.resolve(results);
   }, function (error) {
-    var empty = [];
+    const empty = [];
     promise.resolve(empty);
   });
   return promise;
@@ -52,23 +57,18 @@ function findNearestRestaurants(limit, latitude, longitude) {
 
 // within 5 miles, best restaurants
 function findRecomendedRestaurants(limit, latitude, longitude) {
-  var promise = new Parse.Promise();
-  var query = new Parse.Query(Restaurant);
+  const promise = new Parse.Promise();
+  const query = new Parse.Query(Restaurant);
   query.include('image');
-  if (limit != undefined) {
+  if (limit !== undefined) {
     query.limit(limit);
   }
-  if (latitude != undefined && longitude != undefined) {
-    userGeoPoint = new Parse.GeoPoint(latitude, longitude);
-    query.withinMiles("coordinates", userGeoPoint, 5);
-  }
-  query.notEqualTo("permanantly_closed", true);
-  query.descending("like_count");
-  query.greaterThanOrEqualTo("score", 3.5);
+  const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
+  query.withinMiles("coordinate", userGeoPoint, 5);
   query.find().then(function (results) {
     promise.resolve(results);
   }, function (error) {
-    var empty = [];
+    const empty = [];
     promise.resolve(empty);
   });
   return promise;
@@ -76,52 +76,48 @@ function findRecomendedRestaurants(limit, latitude, longitude) {
 
 // within  30 miles, best restaurants
 function findHotestRestaurants(limit, latitude, longitude) {
-  var promise = new Parse.Promise();
-  var query = new Parse.Query(Restaurant);
+  const promise = new Parse.Promise();
+  const query = new Parse.Query(Restaurant);
   query.include('image');
-  if (limit != undefined) {
+  if (limit !== undefined) {
     query.limit(limit);
   }
-  if (latitude != undefined && longitude != undefined) {
-    userGeoPoint = new Parse.GeoPoint(latitude, longitude);
-    query.withinMiles("coordinates", userGeoPoint, 30);
-  }
-  query.descending("like_count");
+  const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
+  query.withinMiles("coordinate", userGeoPoint, 30);
+  
   query.find().then(function (results) {
     promise.resolve(results);
   }, function (error) {
-    var empty = [];
+    const empty = [];
     promise.resolve(empty);
   });
   return promise;
 }
 
-function assembleRecommendation(restaurants, title, placement, latitude, longitude) {
-  var recommendation = {};
-  var results = [];
-  console.log(latitude);
-  console.log(longitude);
+function assembleResults(restaurants, title, placement, latitude, longitude) {
+  const homepageSection = {};
+  const results = [];
   _.each(restaurants, function (restaurant) {
-    var result = restaurantAssembler.assemble(restaurant, latitude, longitude);
+    const result = restaurantAssembler.assemble(restaurant, latitude, longitude);
     results.push(result);
   });
-  recommendation['results'] = results;
-  recommendation['title'] = title;
-  recommendation['placement'] = placement;
-  return recommendation;
+  homepageSection['results'] = results;
+  homepageSection['title'] = title;
+  homepageSection['placement'] = placement;
+  return homepageSection;
 }
 
 function dedupe(restaurants, blacklist) {
-  if (restaurants == undefined || blacklist == undefined) {
+  if (restaurants === undefined || blacklist === undefined) {
     return restaurants;
   }
-  var keySet = {};
+  const keySet = {};
   _.each(blacklist, function (element) {
     keySet[element.id] = true;
   });
-  var deduped = [];
+  const deduped = [];
   _.each(restaurants, function (restaurant) {
-    if (keySet[restaurant.id] != true) {
+    if (keySet[restaurant.id] !== true) {
       deduped.push(restaurant);
     }
   });
