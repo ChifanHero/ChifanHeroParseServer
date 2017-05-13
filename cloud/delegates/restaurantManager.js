@@ -7,10 +7,9 @@ const RestaurantCandidate = Parse.Object.extend('RestaurantCandidate');
 const Dish = Parse.Object.extend('Dish');
 const _ = require('underscore');
 const restaurantAssembler = require('../assemblers/restaurant');
-const dishAssembler = require('../assemblers/dish');
 const errorHandler = require('../errorHandler');
 const imageAssembler = require('../assemblers/image');
-const googlePhotoAssember = require('../assemblers/googlePhoto');
+const googlePhotoAssembler = require('../assemblers/googlePhoto');
 const reviewAssembler = require('../assemblers/review');
 
 const google = require('../util/googlePlace.js');
@@ -85,62 +84,54 @@ exports.findById = function (req, res) {
   }
   const p1 = findRestaurantById(id);
   const p2 = findHotDishesByRestaurantId(id);
-  const p3 = findHotReviewsByRestaurantId(id);
+  const p3 = findReviewsByRestaurantId(id);
   const p4 = findPhotosByRestaurantId(id);
   const p5 = findGoogleRestaurantById(id);
-  Parse.Promise.when(p1, p2, p3, p4, p5).then(function (_restaurant, _dishes, _review, _photo, restaurantFromGoogle) {
-    let restaurant = restaurantAssembler.assemble(_restaurant);
-    let dishes = [];
-    if (_dishes !== undefined && _dishes.length > 0) {
-      _.each(_dishes, function (_dish) {
-        let dish = dishAssembler.assemble(_dish);
-        dishes.push(dish);
-      });
-    }
-    if (_review !== undefined) {
-      let reviewsContainer = {};
-      reviewsContainer['total_count'] = _review['total_count'];
-      let reviews = [];
-      if (_review['reviews'] !== undefined && _review['reviews'].length > 0) {
-        _.each(_review['reviews'], function (item) {
-          let review = reviewAssembler.assemble(item);
-          reviews.push(review);
+  Parse.Promise.when(p1, p2, p3, p4, p5).then(function (restaurant, dishes, reviews, photos, restaurantFromGoogle) {
+    const restaurantRes = restaurantAssembler.assemble(restaurant);
+    restaurantRes['review_info'] = {
+      "total_count": 0,
+      "reviews": []
+    };
+    restaurantRes['photo_info'] = {
+      "total_count": 0,
+      "photos": []
+    };
+    
+    if (reviews !== undefined) {
+      restaurantRes['review_info']['total_count'] = reviews['total_count'];
+      if (reviews['reviews'] !== undefined && reviews['reviews'].length > 0) {
+        _.each(reviews['reviews'],  item => {
+          restaurantRes['review_info']['reviews'].push(reviewAssembler.assemble(item));
         });
       }
-      reviewsContainer['reviews'] = reviews;
-      restaurant['review_info'] = reviewsContainer;
     }
-    if (_photo !== undefined) {
-      let photosContainer = {};
-      photosContainer['total_count'] = _photo['total_count'];
-      let photos = [];
-      if (_photo['photos'] !== undefined && _photo['photos'].length > 0) {
-        _.each(_photo['photos'], function (item) {
-          let photo = imageAssembler.assemble(item);
-          photos.push(photo);
+    if (photos !== undefined) {
+      restaurantRes['photo_info']['total_count'] = photos['total_count'];
+      if (photos['photos'] !== undefined && photos['photos'].length > 0) {
+        _.each(photos['photos'], item => {
+          restaurantRes['photo_info']['photos'].push(imageAssembler.assemble(item));
         });
       }
-      photosContainer['photos'] = photos;
-      restaurant['photo_info'] = photosContainer;
     }
     if (restaurantFromGoogle !== undefined) {
-      restaurant['open_now'] = restaurantFromGoogle.result.opening_hours.open_now;
-      restaurant['open_time_today'] = restaurantFromGoogle.result.opening_hours.weekday_text[(new Date().getDay() - 1) % 7];
-      restaurant['english_name'] = restaurantFromGoogle.result.name;
-      restaurant['address'] = restaurantFromGoogle.result.formatted_address;
-      restaurant['phone'] = restaurantFromGoogle.result.formatted_phone_number;
-      restaurant['rating'] = restaurantFromGoogle.result.rating;
+      restaurantRes['open_now'] = restaurantFromGoogle.result.opening_hours.open_now;
+      restaurantRes['open_time_today'] = restaurantFromGoogle.result.opening_hours.weekday_text[(new Date().getDay() - 1) % 7];
+      restaurantRes['english_name'] = restaurantFromGoogle.result.name;
+      restaurantRes['address'] = restaurantFromGoogle.result.formatted_address;
+      restaurantRes['phone'] = restaurantFromGoogle.result.formatted_phone_number;
+      restaurantRes['rating'] = mergeRating(restaurantRes['rating'], restaurantRes['rating_count'], restaurantFromGoogle.result.rating);
       for (let i = 0; i < restaurantFromGoogle.result.address_components.length; i++) {
         if(restaurantFromGoogle.result.address_components[i].types[0] === 'locality') {
-          restaurant['city'] = restaurantFromGoogle.result.address_components[i].long_name;
+          restaurantRes['city'] = restaurantFromGoogle.result.address_components[i].long_name;
           break;
         }
       }
       if (restaurantFromGoogle.result.photos !== undefined && restaurantFromGoogle.result.photos.length > 0) {
         _.each(restaurantFromGoogle.result.photos, item => {
-          restaurant['photo_info']['photos'].push(googlePhotoAssember.assemble(item));
+          restaurantRes['photo_info']['photos'].push(googlePhotoAssembler.assemble(item));
         });
-        restaurant['photo_info']['total_count'] += restaurantFromGoogle.result.photos.length;
+        restaurantRes['photo_info']['total_count'] += restaurantFromGoogle.result.photos.length;
       }
 
       if (latitude !== undefined && longitude !== undefined) {
@@ -152,14 +143,13 @@ exports.findById = function (req, res) {
           distanceValue = parseFloat(distanceValue.toFixed(2));
           distance["value"] = distanceValue;
           distance["unit"] = "mi";
-          restaurant['distance'] = distance;
+          restaurantRes['distance'] = distance;
         }
       }
     }
     let response = {};
-    response['result'] = restaurant;
+    response['result'] = restaurantRes;
     res.status(200).json(response);
-
   }, function (error) {
     errorHandler.handle(error, res);
   });
@@ -193,11 +183,12 @@ function findHotDishesByRestaurantId(id) {
   return query.find();
 }
 
-function findHotReviewsByRestaurantId(id) {
+function findReviewsByRestaurantId(id) {
+  const reviewLimit = 3;
   const promise = new Parse.Promise();
   const reviewQuery = new Parse.Query(Review);
-  reviewQuery.descending('review_quality');
-  reviewQuery.limit(5);
+  reviewQuery.descending('updatedAt');
+  reviewQuery.limit(reviewLimit);
   reviewQuery.include('user');
   reviewQuery.include('user.picture');
   reviewQuery.exists('content');
@@ -207,10 +198,10 @@ function findHotReviewsByRestaurantId(id) {
 
   const p1 = reviewQuery.find();
   const p2 = reviewQuery.count();
-  Parse.Promise.when(p1, p2).then(function (_reviews, _count) {
+  Parse.Promise.when(p1, p2).then(function (reviews, count) {
     const result = {};
-    result['reviews'] = _reviews;
-    result['total_count'] = _count;
+    result['reviews'] = reviews;
+    result['total_count'] = Math.min(count, reviewLimit);
     promise.resolve(result);
   });
   return promise;
@@ -225,13 +216,21 @@ function findPhotosByRestaurantId(id) {
 
   const p1 = query.find();
   const p2 = query.count();
-  Parse.Promise.when(p1, p2).then(function (_photos, _count) {
+  Parse.Promise.when(p1, p2).then(function (photos, count) {
     const result = {};
-    result['photos'] = _photos;
-    result['total_count'] = _count;
+    result['photos'] = photos;
+    result['total_count'] = count;
     promise.resolve(result);
   });
   return promise;
+}
+
+function mergeRating(chifanHeroRating, chifanHeroRatingCount, googleRating) {
+  const googleRatingCount = 15; // Assume every restaurant has 15 ratings
+  if (chifanHeroRating !== undefined && chifanHeroRatingCount !== undefined) {
+    return parseFloat(((chifanHeroRating * chifanHeroRatingCount + googleRating * googleRatingCount) / (chifanHeroRatingCount + googleRatingCount)).toFixed(1));
+  }
+  return googleRating;
 }
 
 /**
@@ -273,4 +272,4 @@ exports.update = function (req, res) {
   }, function (error) {
     errorHandler.handle(error, res);
   });
-}
+};

@@ -12,7 +12,6 @@ exports.createReview = function (req, res) {
   const user = req.user;
   const rating = req.body['rating'];
   const content = req.body['content'];
-  const photos = req.body['photos'];
   const restaurantId = req.body['restaurant_id'];
   
   const review = new Review();
@@ -28,16 +27,6 @@ exports.createReview = function (req, res) {
   }
   
   review.save().then(savedReview => {
-    const imagesToSave = [];
-    if (photos !== undefined && _.isArray(photos) && photos.length > 0) {
-      _.each(photos, photoId => {
-        const image = new Image();
-        image.id = photoId;
-        image.set('review', savedReview);
-        imagesToSave.push(image);
-      });
-    }
-    Parse.Object.saveAll(imagesToSave);
     const response = {};
     response['result'] = reviewAssembler.assemble(savedReview);
     res.status(201).json(response);
@@ -46,9 +35,8 @@ exports.createReview = function (req, res) {
   });
 };
 
-exports.listReviews = function (req, res) {
+exports.findAllReviews = function (req, res) {
   const restaurantId = req.query['restaurant_id'];
-  const sort = req.query['sort'];
   const skip = req.query["skip"];
   const limit = req.query["limit"];
   
@@ -56,9 +44,7 @@ exports.listReviews = function (req, res) {
   const restaurant = new Restaurant();
   restaurant.id = restaurantId;
   reviewQuery.equalTo('restaurant', restaurant);
-  if (sort === 'latest') {
-    reviewQuery.descending('updatedAt');
-  }
+  reviewQuery.descending('updatedAt');
   if (skip !== undefined) {
     reviewQuery.skip(skip);
   }

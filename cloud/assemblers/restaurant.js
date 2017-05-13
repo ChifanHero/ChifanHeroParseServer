@@ -4,22 +4,23 @@ exports.assemble = function(source) {
 	let restaurant = {};
 	if (source !== undefined) {
 		restaurant['id'] = source.id;
-		let name = source.get('name');
-		if (name === undefined || name === '') {
-			let englishName = source.get('english_name'); 
-			if (englishName !== undefined && englishName !== '') {
-				name = englishName;
-			}
-		}
-		restaurant['name'] = name;
+		restaurant['name'] = source.get('name');
 		restaurant['english_name'] = source.get('english_name');
 		restaurant['favorite_count'] = source.get('favorite_count');
-		if (source.get('score') !== undefined) {
-			restaurant['rating'] = parseFloat(source.get('score').toFixed(1));
-		} else {
-			restaurant['rating'] = 0.0
-		}
-		restaurant['picture'] = imageAssembler.assemble(source.get('image'));
+    if (source.get('rating') !== undefined) {
+      restaurant['rating'] = parseFloat(source.get('rating').toFixed(1)); 
+    }
+    restaurant['rating_count'] = source.get('rating_count');
+    restaurant['google_place_id'] = source.get('google_place_id');
+    if (source.get('coordinate') !== undefined) {
+      restaurant['coordinate'] = {
+        "lat": source.get('coordinate').latitude,
+        "lon": source.get('coordinate').longitude
+      };  
+    }
+		if (source.get('image') !== undefined) {
+      restaurant['picture'] = imageAssembler.assemble(source.get('image'));  
+    }
 	}
 	return restaurant; 
 };

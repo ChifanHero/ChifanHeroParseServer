@@ -1,5 +1,9 @@
 "use strict";
 
+/*
+ * If restaurant doesn't have a profile image, then make
+ * the first stored image as restaurant profile image
+ */
 Parse.Cloud.afterSave('Image', function (request) {
   const imageSaved = request.object;
   const restaurant = imageSaved.get('restaurant');
@@ -14,6 +18,9 @@ Parse.Cloud.afterSave('Image', function (request) {
   }
 });
 
+/*
+ * Delete files from disk before deleting image record
+ */
 Parse.Cloud.beforeDelete('Image', function (request, response) {
   const imageToBeDeleted = request.object;
   const originalName = imageToBeDeleted.get('original').name();

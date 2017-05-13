@@ -44,7 +44,7 @@ function findNearestRestaurants(limit, latitude, longitude) {
     query.limit(limit);
   }
   const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
-  query.near("coordinates", userGeoPoint);
+  query.near("coordinate", userGeoPoint);
 
   query.find().then(function (results) {
     promise.resolve(results);
@@ -64,11 +64,7 @@ function findRecomendedRestaurants(limit, latitude, longitude) {
     query.limit(limit);
   }
   const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
-  query.withinMiles("coordinates", userGeoPoint, 5);
-
-  query.notEqualTo("permanantly_closed", true);
-  query.descending("like_count");
-  query.greaterThanOrEqualTo("score", 3.5);
+  query.withinMiles("coordinate", userGeoPoint, 5);
   query.find().then(function (results) {
     promise.resolve(results);
   }, function (error) {
@@ -87,9 +83,8 @@ function findHotestRestaurants(limit, latitude, longitude) {
     query.limit(limit);
   }
   const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
-  query.withinMiles("coordinates", userGeoPoint, 30);
+  query.withinMiles("coordinate", userGeoPoint, 30);
   
-  query.descending("like_count");
   query.find().then(function (results) {
     promise.resolve(results);
   }, function (error) {

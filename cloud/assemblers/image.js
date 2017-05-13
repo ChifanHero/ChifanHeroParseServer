@@ -1,3 +1,5 @@
+'use strict';
+
 exports.assemble = function(source){
 	const image = {};
 	if (source !== undefined) {
@@ -9,10 +11,8 @@ exports.assemble = function(source){
 			image['original'] = source.get('original').url();
 		}
 		image['type'] = source.get('type');
-		image['restaurant'] = source.get('restaurant');
-		
-		/* for Google photo api */
-		image['photo_reference'] = source.get('photo_reference');
+    image['restaurant'] = source.get('restaurant');
+    image['review'] = source.get('review');
 	}
 	return image;
 };
