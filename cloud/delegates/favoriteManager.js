@@ -64,7 +64,7 @@ exports.addByUserSession = function (req, res) {
  * @param req
  * @param res
  */
-exports.findByUserSession = function (req, res) {
+exports.findAllFavoritesByUserSession = function (req, res) {
   var type = req.query['type'];
   var lat = parseFloat(req.query['lat']);
   var lon = parseFloat(req.query['lon']);

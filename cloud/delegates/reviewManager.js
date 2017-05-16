@@ -35,8 +35,8 @@ exports.createReview = function (req, res) {
   });
 };
 
-exports.findAllReviews = function (req, res) {
-  const restaurantId = req.query['restaurant_id'];
+exports.findAllReviewsOfOneRestaurant = function (req, res) {
+  const restaurantId = req.params.id;
   const skip = req.query["skip"];
   const limit = req.query["limit"];
   
@@ -67,7 +67,7 @@ exports.findAllReviews = function (req, res) {
   });
 };
 
-exports.fetchReview = function (req, res) {
+exports.findReviewById = function (req, res) {
   const id = req.params.id;
   const reviewQuery = new Parse.Query(Review);
   

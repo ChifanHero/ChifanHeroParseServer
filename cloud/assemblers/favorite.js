@@ -1,5 +1,4 @@
 const restaurantAssembler = require('./restaurant');
-const dishAssembler = require('./dish');
 const selectedCollectionAssembler = require('./selectedCollection');
 
 exports.assemble = function(source, lat, lon){
@@ -11,9 +10,6 @@ exports.assemble = function(source, lat, lon){
       const user = {};
 			user['id'] = source.get('user').id;
 			favorite['user'] = user;
-		}
-		if (source.get('dish') !== undefined) {
-      favorite['dish'] = dishAssembler.assemble(source.get('dish'));
 		}
 		if (source.get('restaurant') !== undefined) {
       favorite['restaurant'] = restaurantAssembler.assemble(source.get('restaurant'), lat, lon);

@@ -5,17 +5,16 @@ const ParseServer = require('parse-server').ParseServer;
 const ParseDashboard = require('parse-dashboard');
 const path = require('path');
 
-const restaurant_manager = require('./cloud/delegates/restaurantManager');
-const dish_manager = require('./cloud/delegates/dishManager');
-const user_manager = require('./cloud/delegates/userManager');
-const favorite_manager = require('./cloud/delegates/favoriteManager');
-const image_manager = require('./cloud/delegates/imageManager');
-const selectedCollection_manager = require('./cloud/delegates/selectedCollectionManager');
-const city_manager = require('./cloud/delegates/cityManager');
-const homepage_manager = require('./cloud/delegates/homepageManager');
-const review_manager = require('./cloud/delegates/reviewManager');
-const userActivity_manager = require('./cloud/delegates/userActivityManager');
-const dish_recommendation_manager = require('./cloud/delegates/dishRecommendationManager');
+const restaurantManager = require('./cloud/delegates/restaurantManager');
+const userManager = require('./cloud/delegates/userManager');
+const favoriteManager = require('./cloud/delegates/favoriteManager');
+const imageManager = require('./cloud/delegates/imageManager');
+const selectedCollectionManager = require('./cloud/delegates/selectedCollectionManager');
+const cityManager = require('./cloud/delegates/cityManager');
+const homepageManager = require('./cloud/delegates/homepageManager');
+const reviewManager = require('./cloud/delegates/reviewManager');
+const userActivityManager = require('./cloud/delegates/userActivityManager');
+const recommendedDishManager = require('./cloud/delegates/recommendedDishManager');
 
 const devEnv = {
   dbURI: "mongodb://aws:aws@ds015780.mlab.com:15780/lightning-staging",
@@ -95,48 +94,42 @@ app.get('/test', function (req, res) {
 
 //GET
 
-app.get('/parse/restaurants/:id', restaurant_manager.findById);
+app.get('/parse/restaurants/:id', restaurantManager.findRestaurantById);
 
+app.get('/parse/favorites', favoriteManager.findAllFavoritesByUserSession);
+//app.get('/parse/isFavorite', favorite_manager.checkIsUserFavorite);
 
-app.get('/parse/dishes', dish_manager.findByRestaurantId);
-app.get('/parse/dishes/:id', dish_manager.findById);
-app.get('/parse/restaurants', restaurant_manager.findAll);
+app.get('/parse/selectedCollections/:id', selectedCollectionManager.findSelectedCollectionById);
+app.get('/parse/selectedCollections', selectedCollectionManager.findAllSelectedCollectionsGivenCenterAndRadius);
+app.get('/parse/restaurantCollectionMembers/:id', selectedCollectionManager.findAllRestaurantMembersById);
 
-app.get('/parse/favorites', favorite_manager.findByUserSession);
-app.get('/parse/isFavorite', favorite_manager.checkIsUserFavorite);
+app.get('/parse/cities', cityManager.findCitiesWithPrefix);
+app.get('/parse/hotCities', cityManager.findAllHotCities);
 
-app.get('/parse/selectedCollections/:id', selectedCollection_manager.findById);
-app.get('/parse/selectedCollections', selectedCollection_manager.findAllWithCenterAndRadius);
-app.get('/parse/restaurantCollectionMembers/:id', selectedCollection_manager.findAllRestaurantsMembersById);
+app.get('/parse/restaurants/:id/images', imageManager.findAllImagesOfOneRestaurant);
 
-app.get('/parse/cities', city_manager.findCitiesWithPrefix);
-app.get('/parse/hotCities', city_manager.getHotCities);
-
-app.get('/parse/images', image_manager.findAllByRestaurantId);
-
-app.get('/parse/homepage', homepage_manager.getHomePages);
-app.get('/parse/reviews', review_manager.findAllReviews);
-app.get('/parse/activities', userActivity_manager.listUserActivities);
-app.get('/parse/reviews/:id', review_manager.fetchReview);
+app.get('/parse/homepages', homepageManager.getHomePages);
+app.get('/parse/restaurants/:id/reviews', reviewManager.findAllReviewsOfOneRestaurant);
+app.get('/parse/reviews/:id', reviewManager.findReviewById);
 
 //POST
-app.post('/parse/favorites', favorite_manager.addByUserSession);
-app.post('/parse/images', image_manager.uploadImage);
+app.post('/parse/favorites', favoriteManager.addByUserSession);
+app.post('/parse/images', imageManager.uploadImage);
 
-app.post('/parse/users/oauthLogin', user_manager.oauthLogIn);
-app.post('/parse/users/signUp', user_manager.signUp);
-app.post('/parse/users/logIn', user_manager.logIn);
-app.post('/parse/users/update', user_manager.update);
-app.post('/parse/users/logOut', user_manager.logOut);
-app.post('/parse/reviews', review_manager.createReview);
-app.post('/parse/dishRecommendations', dish_recommendation_manager.createDishRecommendation);
+app.post('/parse/users/oauthLogin', userManager.oauthLogIn);
+app.post('/parse/users/signUp', userManager.signUp);
+app.post('/parse/users/logIn', userManager.logIn);
+app.post('/parse/users/update', userManager.update);
+app.post('/parse/users/logOut', userManager.logOut);
+app.post('/parse/reviews', reviewManager.createReview);
+app.post('/parse/recommendedDishes', recommendedDishManager.upsertRecommendedDish);
 
 //PUT
-app.put('/parse/restaurants/:id', restaurant_manager.update);
-app.put('/parse/restaurantCollectionMemCan', selectedCollection_manager.nominateRestaurant);
+app.put('/parse/restaurants/:id', restaurantManager.updateRestaurantById);
+app.put('/parse/restaurantCollectionMemCan', selectedCollectionManager.nominateRestaurant);
 
 //DELETE
-app.delete('/parse/favorites', favorite_manager.deleteByUserSession);
+app.delete('/parse/favorites', favoriteManager.deleteByUserSession);
 
 const port = process.env.PORT || 1337;
 const httpServer = require('http').createServer(app);

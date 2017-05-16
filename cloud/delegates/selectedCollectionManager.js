@@ -9,7 +9,7 @@ var _ = require('underscore');
 
 var COVERAGE_RADIUS = 100;
 
-exports.findById = function (req, res) {
+exports.findSelectedCollectionById = function (req, res) {
   var id = req.params.id;
   var query = new Parse.Query(SelectedCollection);
   query.include('cell_image');
@@ -23,7 +23,7 @@ exports.findById = function (req, res) {
   });
 }
 
-exports.findAllWithCenterAndRadius = function (req, res) {
+exports.findAllSelectedCollectionsGivenCenterAndRadius = function (req, res) {
   if (req.query.lat == undefined || req.query.lon == undefined) {
     var error = new Parse.Error(Parse.Error.INVALID_QUERY, "Please input latitude and longitude");
     errorHandler.handle(error, res);
@@ -52,7 +52,7 @@ exports.findAllWithCenterAndRadius = function (req, res) {
   });
 }
 
-exports.findAllRestaurantsMembersById = function (req, res) {
+exports.findAllRestaurantMembersById = function (req, res) {
   var id = req.params.id;
   var selectedCollection = new SelectedCollection();
   selectedCollection.id = id;
