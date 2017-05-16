@@ -15,64 +15,11 @@ const reviewAssembler = require('../assemblers/review');
 const google = require('../util/googlePlace.js');
 
 /**
- * Find all restaurants satisfying requirements
- * @param req
- * @param res
- */
-exports.findAll = function (req, res) {
-  const latitude = req.query['lat'];
-  const longitude = req.query['lon'];
-  const skip = req.query['skip'];
-  let limit = req.query['limit'];
-  if (limit === undefined) {
-    limit = 10;
-  }
-  const sortBy = req.query['sort_by'];
-  const sortOrder = req.query['sort_order'];
-  let userGeoPoint = undefined;
-  if (latitude !== undefined && longitude !== undefined) {
-    userGeoPoint = new Parse.GeoPoint(latitude, longitude);
-  }
-  const query = new Parse.Query(Restaurant);
-  query.include('image');
-  if (userGeoPoint !== undefined) {
-    query.withinMiles("coordinates", userGeoPoint, 100);
-  }
-  if (skip !== undefined) {
-    query.skip(skip);
-  }
-  if (limit !== undefined) {
-    query.limit(limit);
-  }
-  if (sortBy === 'hotness') {
-    if (sortOrder === 'ascend') {
-      query.ascending('like_count');
-    } else {
-      query.descending('like_count');
-    }
-  } else if (sortBy === 'distance' && userGeoPoint !== undefined) {
-    query.near('coordinates', userGeoPoint);
-  }
-  query.find().then(function (results) {
-    let response = {};
-    let restaurants = [];
-    _.each(results, function (result) {
-      const restaurant = restaurantAssembler.assemble(result, latitude, longitude);
-      restaurants.push(restaurant);
-    });
-    response['results'] = restaurants;
-    res.status(200).json(response);
-  }, function (error) {
-    errorHandler.handle(error, res);
-  })
-};
-
-/**
  * Find restaurant by Id including dishes, reviews and photos
  * @param req
  * @param res
  */
-exports.findById = function (req, res) {
+exports.findRestaurantById = function (req, res) {
   const id = req.params.id;
   let longitude = undefined;
   let latitude = undefined;
@@ -238,7 +185,7 @@ function mergeRating(chifanHeroRating, chifanHeroRatingCount, googleRating) {
  * @param req
  * @param res
  */
-exports.update = function (req, res) {
+exports.updateRestaurantById = function (req, res) {
   const id = req.params.id;
   const restaurant = new Restaurant();
   restaurant.id = id;

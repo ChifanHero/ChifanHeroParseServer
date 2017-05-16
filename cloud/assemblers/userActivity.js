@@ -1,6 +1,5 @@
 var userAssembler = require('./user');
 var reviewAssembler = require('./review');
-var dishAssembler = require('./dish');
 
 exports.assemble = function(source) {
 	var activity = {};
@@ -15,10 +14,6 @@ exports.assemble = function(source) {
 		} else if (type == 'upload_image') {
 			var uploadActivity = {};
 			activity['upload_image'] = uploadActivity;
-		} else if (type == 'recommend_dish') {
-			var dishRecommendation = {};
-			dishRecommendation['dish'] = dishAssembler.assemble(source.get('dish'));
-			activity['recommend_dish'] = dishRecommendation;
 		}
 	} 
 	return activity; 

@@ -49,8 +49,8 @@ exports.uploadImage = function (req, res) {
   });
 };
 
-exports.findAllByRestaurantId = function (req, res) {
-  const restaurantId = req.query.restaurantId;
+exports.findAllImagesOfOneRestaurant = function (req, res) {
+  const restaurantId = req.param.id;
   const restaurant = {
     __type: "Pointer",
     className: "Restaurant",

@@ -25,7 +25,7 @@ exports.findCitiesWithPrefix = function (req, res) {
   });
 };
 
-exports.getHotCities = function (req, res) {
+exports.findAllHotCities = function (req, res) {
   var query = new Parse.Query(City);
   query.limit(5);
   query.equalTo("activated", true);
