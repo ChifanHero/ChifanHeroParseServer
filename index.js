@@ -95,6 +95,9 @@ app.get('/test', function (req, res) {
 //GET
 
 app.get('/parse/restaurants/:id', restaurantManager.findRestaurantById);
+app.get('/parse/restaurants/:id/images', imageManager.findAllImagesOfOneRestaurant);
+app.get('/parse/restaurants/:id/reviews', reviewManager.findAllReviewsOfOneRestaurant);
+app.get('/parse/restaurants/:id/recommendedDishes', recommendedDishManager.findAllRecommendedDishesOfOneRestaurant);
 
 app.get('/parse/favorites', favoriteManager.findAllFavoritesByUserSession);
 //app.get('/parse/isFavorite', favorite_manager.checkIsUserFavorite);
@@ -106,10 +109,7 @@ app.get('/parse/restaurantCollectionMembers/:id', selectedCollectionManager.find
 app.get('/parse/cities', cityManager.findCitiesWithPrefix);
 app.get('/parse/hotCities', cityManager.findAllHotCities);
 
-app.get('/parse/restaurants/:id/images', imageManager.findAllImagesOfOneRestaurant);
-
 app.get('/parse/homepages', homepageManager.getHomePages);
-app.get('/parse/restaurants/:id/reviews', reviewManager.findAllReviewsOfOneRestaurant);
 app.get('/parse/reviews/:id', reviewManager.findReviewById);
 
 //POST

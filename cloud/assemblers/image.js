@@ -1,5 +1,8 @@
 'use strict';
 
+const restaurantAssembler = require('./restaurant');
+const reviewAssembler = require('./review');
+
 exports.assemble = function(source){
 	const image = {};
 	if (source !== undefined) {
@@ -11,8 +14,12 @@ exports.assemble = function(source){
 			image['original'] = source.get('original').url();
 		}
 		image['type'] = source.get('type');
-    image['restaurant'] = source.get('restaurant');
-    image['review'] = source.get('review');
+		if(source.get('restaurant') !== undefined) {
+      image['restaurant'] = restaurantAssembler.assemble(source.get('restaurant'));
+    }
+    if(source.get('review') !== undefined) {
+      image['review'] = reviewAssembler.assemble(source.get('review'));
+    }
 	}
 	return image;
 };
