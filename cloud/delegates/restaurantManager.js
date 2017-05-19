@@ -60,6 +60,7 @@ exports.findRestaurantById = function (req, res) {
           restaurantRes['photo_info']['photos'].push(imageAssembler.assemble(item));
         });
       }
+      mergePhotosIntoReviews(restaurantRes['review_info']['reviews'], restaurantRes['photo_info']['photos']);
     }
     if (restaurantFromGoogle !== undefined) {
       restaurantRes['open_now'] = restaurantFromGoogle.result.opening_hours.open_now;
@@ -101,6 +102,20 @@ exports.findRestaurantById = function (req, res) {
     errorHandler.handle(error, res);
   });
 };
+
+function mergePhotosIntoReviews(reviews, photos) {
+  if(reviews !== undefined) {
+    _.each(reviews,  review => {
+      review['photos'] = [];
+      _.each(photos, photo => {
+        if(photo['review'] !== undefined && photo['review']['id'] === review['id']){
+          review['photos'].push(photo);
+        }
+      });
+    });
+  }
+}
+
 
 function findRestaurantById(id) {
   const query = new Parse.Query(Restaurant);
