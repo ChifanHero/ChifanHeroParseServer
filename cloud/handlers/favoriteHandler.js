@@ -1,106 +1,82 @@
-var Favorite = Parse.Object.extend('Favorite');
+const Favorite = Parse.Object.extend('Favorite');
 
 Parse.Cloud.beforeSave('Favorite', function (request, response) {
-  var favoriteToSave = request.object;
-  var user = favoriteToSave.get('user');
-  var type = favoriteToSave.get('type');
-  if (user == undefined || type == undefined) {
-    response.error("incomplete request");
+  const favoriteToSave = request.object;
+  const user = favoriteToSave.get('user');
+  const type = favoriteToSave.get('type');
+  if (user === undefined || type === undefined) {
+    response.error("Incomplete request");
     return;
   }
-  var query = new Parse.Query(Favorite);
+  const query = new Parse.Query(Favorite);
   query.equalTo('user', user);
-  if (type === 'dish') {
-    query.equalTo('dish', favoriteToSave.get('dish'));
-  } else if (type === 'restaurant') {
+  if (type === 'restaurant') {
     query.equalTo('restaurant', favoriteToSave.get('restaurant'));
   } else if (type === 'selected_collection') {
     query.equalTo('selected_collection', favoriteToSave.get('selected_collection'));
   }
-  query.count().then(function (count) {
+  query.count().then(count => {
     if (count > 0) {
-      response.error('favorite existing');
+      response.error('Favorite exists');
     } else {
       response.success();
     }
-  }, function (error) {
+  }, error => {
     response.error(error);
   });
 });
 
 Parse.Cloud.afterSave('Favorite', function (request) {
-  var favoriteSaved = request.object;
-  var type = favoriteSaved.get('type');
-  if (type == undefined) {
-    return;
-  }
-  if (type === 'dish') {
-    var dish = favoriteSaved.get('dish');
-    if (dish != undefined) {
-      dish.fetch().then(function (_dish) {
-        if (_dish.get('favorite_count') == undefined) {
-          _dish.set('favorite_count', 1);
+  const favoriteSaved = request.object;
+  const type = favoriteSaved.get('type');
+  if (type === 'restaurant') {
+    const restaurant = favoriteSaved.get('restaurant');
+    if (restaurant !== undefined) {
+      restaurant.fetch().then(restaurant => {
+        if (restaurant.get('favorite_count') === undefined) {
+          restaurant.set('favorite_count', 1);
         } else {
-          _dish.increment('favorite_count', 1);
+          restaurant.increment('favorite_count', 1);
         }
-        _dish.save();
-      });
-    }
-  } else if (type === 'restaurant') {
-    var restaurant = favoriteSaved.get('restaurant');
-    if (restaurant != undefined) {
-      restaurant.fetch().then(function (_restaurant) {
-        if (_restaurant.get('favorite_count') == undefined) {
-          _restaurant.set('favorite_count', 1);
-        } else {
-          _restaurant.increment('favorite_count', 1);
-        }
-        _restaurant.save();
+        restaurant.save();
       });
     }
   } else if (type === 'selected_collection') {
-    var selectedCollection = favoriteSaved.get('selected_collection');
-    if (selectedCollection != undefined) {
-      selectedCollection.fetch().then(function (_selectedCollection) {
-        if (_selectedCollection.get('user_favorite_count') == undefined) {
-          _selectedCollection.set('user_favorite_count', 1);
+    const selectedCollection = favoriteSaved.get('selected_collection');
+    if (selectedCollection !== undefined) {
+      selectedCollection.fetch().then(selectedCollection => {
+        if (selectedCollection.get('user_favorite_count') === undefined) {
+          selectedCollection.set('user_favorite_count', 1);
         } else {
-          _selectedCollection.increment('user_favorite_count', 1);
+          selectedCollection.increment('user_favorite_count', 1);
         }
-        _selectedCollection.save();
+        selectedCollection.save();
       })
     }
   }
 });
 
 Parse.Cloud.afterDelete('Favorite', function (request) {
-  var favoriteDeleted = request.object;
-  var type = favoriteDeleted.get('type');
-  if (type == undefined) {
-    return;
-  }
-  if (type === 'dish') {
-    var dish = favoriteDeleted.get('dish');
-    if (dish != undefined) {
-      dish.fetch().then(function (dish) {
-        dish.increment('favorite_count', -1);
-        dish.save();
-      });
-    }
-  } else if (type === 'restaurant') {
-    var restaurant = favoriteDeleted.get('restaurant');
-    if (restaurant != undefined) {
-      restaurant.fetch().then(function (restaurant) {
-        restaurant.increment('favorite_count', -1);
+  const favoriteDeleted = request.object;
+  const type = favoriteDeleted.get('type');
+  if (type === 'restaurant') {
+    const restaurant = favoriteDeleted.get('restaurant');
+    if (restaurant !== undefined) {
+      restaurant.fetch().then(restaurant => {
+        if (restaurant.get('favorite_count') !== undefined && restaurant.get('favorite_count') !== 0) {
+          restaurant.increment('favorite_count', -1);
+        }
         restaurant.save();
       });
     }
   } else if (type === 'selected_collection') {
-    var selectedCollection = favoriteDeleted.get('selected_collection');
-    if (selectedCollection != undefined) {
-      selectedCollection.fetch().then(function (_selectedCollection) {
-        _selectedCollection.increment('user_favorite_count', -1);
-        _selectedCollection.save();
+    const selectedCollection = favoriteDeleted.get('selected_collection');
+    if (selectedCollection !== undefined) {
+      selectedCollection.fetch().then(selectedCollection => {
+        if (selectedCollection.get('user_favorite_count') !== undefined && selectedCollection.get('user_favorite_count') !== 0) {
+          selectedCollection.increment('user_favorite_count', -1);
+        }
+        selectedCollection.save();
       })
     }
   }

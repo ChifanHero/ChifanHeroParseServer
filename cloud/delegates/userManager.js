@@ -1,47 +1,47 @@
-var userAssembler = require('../assemblers/user');
-var imageAssembler = require('../assemblers/image');
-var errorHandler = require('../errorHandler');
-var Buffer = require('buffer').Buffer;
-var _ = require('underscore');
+const userAssembler = require('../assemblers/user');
+const imageAssembler = require('../assemblers/image');
+const errorHandler = require('../errorHandler');
+const Buffer = require('buffer').Buffer;
+const _ = require('underscore');
 
-var TokenStorage = Parse.Object.extend('TokenStorage');
+const TokenStorage = Parse.Object.extend('TokenStorage');
 
-var restrictedAcl = new Parse.ACL();
+const restrictedAcl = new Parse.ACL();
 restrictedAcl.setPublicReadAccess(false);
 restrictedAcl.setPublicWriteAccess(false);
 
 exports.oauthLogIn = function (req, res) {
-  var oauthLogin = req.body["oauth_login"];
-  var accessToken = req.body["access_token"];
+  const oauthLogin = req.body["oauth_login"];
+  const accessToken = req.body["access_token"];
 
   Parse.Cloud.useMasterKey();
   Parse.Promise.as().then(function () {
-    if (oauthLogin != undefined) {
+    if (oauthLogin !== undefined) {
       return upsertOauthUser(accessToken, oauthLogin);
     } else {
       return Parse.Promise.error("Oauth Login is required");
     }
   }).then(function (user) {
-    var response = {};
+    const response = {};
     response['success'] = true;
     response['session_token'] = user.getSessionToken();
 
-    var userRes = userAssembler.assemble(user);
+    const userRes = userAssembler.assemble(user);
     response['user'] = userRes;
     res.status(200).json(response);
   });
-}
+};
 
 /**
  *   This function checks to see if this user has logged in before.
  *   If the user is found, update the access_token (if necessary) and return
  *   the users session token.  If not found, return the newOauthUser promise.
  */
-var upsertOauthUser = function (accessToken, oauthLogin) {
-  var query = new Parse.Query(TokenStorage);
+const upsertOauthUser = function (accessToken, oauthLogin) {
+  const query = new Parse.Query(TokenStorage);
   query.equalTo('oauth_login', oauthLogin);
   query.ascending('createdAt');
-  var password;
+  let password;
   // Check if this oauthLogin has previously logged in, using the master key
   return query.first({useMasterKey: true}).then(function (tokenData) {
     // If not, create a new user.
@@ -49,7 +49,7 @@ var upsertOauthUser = function (accessToken, oauthLogin) {
       return newOauthUser(accessToken, oauthLogin);
     }
     // If found, fetch the user.
-    var user = tokenData.get('user');
+    const user = tokenData.get('user');
     return user.fetch({useMasterKey: true}).then(function (user) {
       // Update the accessToken if it is different.
       if (accessToken !== tokenData.get('access_token')) {
@@ -65,7 +65,7 @@ var upsertOauthUser = function (accessToken, oauthLogin) {
       _.times(24, function (i) {
         password.set(i, _.random(0, 255));
       });
-      password = password.toString('base64')
+      password = password.toString('base64');
       user.setPassword(password);
       return user.save();
     }).then(function (user) {
@@ -75,7 +75,7 @@ var upsertOauthUser = function (accessToken, oauthLogin) {
       return Parse.Promise.as(user);
     });
   });
-}
+};
 
 /**
  *   This function creates a Parse User, and
@@ -84,11 +84,11 @@ var upsertOauthUser = function (accessToken, oauthLogin) {
  *   against a race condition:  In the rare event where 2 new users are created
  *   at the same time, only the first one will actually get used.
  */
-var newOauthUser = function (accessToken, oauthLogin) {
-  var user = new Parse.User();
+const newOauthUser = function (accessToken, oauthLogin) {
+  const user = new Parse.User();
   // Generate a random username and password.
-  var username = oauthLogin + "#ChifanHero";
-  var password = new Buffer(24);
+  const username = oauthLogin + "#ChifanHero";
+  const password = new Buffer(24);
   _.times(24, function (i) {
     password.set(i, _.random(0, 255));
   });
@@ -97,7 +97,7 @@ var newOauthUser = function (accessToken, oauthLogin) {
   // Sign up the new User
   return user.signUp().then(function (user) {
     // create a new TokenStorage object to store the user+GitHub association.
-    var ts = new TokenStorage();
+    const ts = new TokenStorage();
     ts.set('oauth_login', oauthLogin);
     ts.set('access_token', accessToken);
     ts.set('user', user);
@@ -107,26 +107,26 @@ var newOauthUser = function (accessToken, oauthLogin) {
   }).then(function (tokenStorage) {
     return upsertOauthUser(accessToken, oauthLogin);
   });
-}
+};
 
 exports.logIn = function (req, res) {
-
-  //can't use req.body['username']
-  var username = req.body.username;
-  var encodedPassword = req.body.password;
-  Parse.User.logIn(username, encodedPassword).then(function (_user) {
-    var response = {};
-    response['success'] = true;
-    response['session_token'] = _user.getSessionToken();
-    var user = userAssembler.assemble(_user);
-    var picture = _user.get('picture');
-    if (picture != undefined) {
-      picture.fetch().then(function (_picture) {
-        var picture = imageAssembler.assemble(_picture);
+  
+  const username = req.body['username'];
+  const encodedPassword = req.body['password'];
+  Parse.User.logIn(username, encodedPassword).then(fetchedUser => {
+    const response = {
+      'success': true,
+      'session_token': fetchedUser.getSessionToken()
+    };
+    const user = userAssembler.assemble(fetchedUser);
+    const picture = fetchedUser.get('picture');
+    if (picture !== undefined) {
+      picture.fetch().then(fetchedPicture => {
+        const picture = imageAssembler.assemble(fetchedPicture);
         user['picture'] = picture;
         response['user'] = user;
         res.status(200).json(response);
-      }, function (error) {
+      }, error => {
         response['user'] = user;
         res.status(200).json(response);
       });
@@ -137,126 +137,79 @@ exports.logIn = function (req, res) {
   }, function (error) {
     errorHandler.handle(error, res);
   });
-}
+};
 
 
 exports.signUp = function (req, res) {
-
-  //can't use req.body['username']
-  var username = req.body.username;
-  var encodedPassword = req.body.password;
-  var email = username;
+  
+  const username = req.body['username'];
+  const encodedPassword = req.body['password'];
+  const email = username;
 
   //username must be provided
-  if (username == undefined) {
-    var error = {};
-    error['message'] = "username must be provided";
-    res.status(400).json(error);
+  if (username === undefined) {
+    errorHandler.handleCustomizedError(400, "Username must be provided", res);
     return;
   }
-
   //no need to write additional function to validate username. Parse will do that (validate email)
-
   //password must be provided
-  if (encodedPassword == undefined) {
-    var error = {};
-    error['message'] = "password must be provided";
-    res.status(400).json(error);
+  if (encodedPassword === undefined) {
+    errorHandler.handleCustomizedError(400, "Password must be provided", res);
     return;
   }
-
   //since this is encoded password, we can't validate here
   //please validate password on client side
-
-
-  var user = new Parse.User();
+  
+  const user = new Parse.User();
   user.set('username', username);
   user.set('password', encodedPassword);
   user.set('email', email);
-  user.signUp().then(function (_user) {
-    var response = {};
-    response['success'] = true;
-    response['session_token'] = _user.getSessionToken();
-
-    var userRes = userAssembler.assemble(_user);
-    var picture = _user.get('picture');
-
-    if (picture != undefined) {
-      picture.fetch().then(function (_picture) {
-        var picture = imageAssembler.assemble(_picture);
-        userRes['picture'] = picture;
-        response['user'] = userRes;
-        res.status(200).json(response);
-      }, function (error) {
-        errorHandler.handle(error, res);
-      });
-    } else {
-      response['user'] = userRes;
-      res.status(200).json(response);
-    }
-  }, function (error) {
+  user.signUp().then(newUser => {
+    const response = {
+      'success': true,
+      'session_token': newUser.getSessionToken(),
+      'user': userAssembler.assemble(newUser)
+    };
+    res.status(201).json(response);
+  }, error => {
     errorHandler.handle(error, res);
   });
 
-}
+};
 
 exports.update = function (req, res) {
 
   //If session token is invalid, Parse will handle that
   //We don't need to verify session token
-  var user = req.user;
+  const user = req.user;
 
-  var nickName = req.body['nick_name'];
-  var pictureId = req.body['pictureId']
-
-  if (nickName != undefined) {
+  const nickName = req.body['nick_name'];
+  if (nickName !== undefined) {
     user.set('nick_name', nickName);
   }
-  if (pictureId != undefined) {
-    var picture = {
-      __type: "Pointer",
-      className: "Image",
-      objectId: pictureId
+  user.save().then(updatedUser => {
+    const response = {
+      'success': true,
+      'session_token': updatedUser.getSessionToken(),
+      'user': userAssembler.assemble(updatedUser)
     };
-    user.set('picture', picture)
-  }
-
-  user.save().then(function (_user) {
-    var response = {};
-    response['success'] = true;
-
-    var userRes = {};
-    userRes = userAssembler.assemble(_user);
-    var picture = _user.get('picture');
-    if (picture != undefined) {
-      picture.fetch().then(function (_picture) {
-        var pictureRes = imageAssembler.assemble(_picture);
-        userRes['picture'] = pictureRes;
-        response['user'] = userRes;
-        res.status(200).json(response);
-      }, function (error) {
-        errorHandler.handle(error, res);
-      });
-    } else {
-      response['user'] = userRes;
-      res.status(200).json(response);
-    }
-  }, function (error) {
+    res.status(200).json(response);
+  }, error => {
     errorHandler.handle(error, res);
   });
-}
+};
 
 exports.logOut = function (req, res) {
 
   //User-Session is required in HTTP header
-  Parse.User.logOut().then(function () {
-    var response = {};
+  Parse.User.logOut().then(() => {
+    const response = {};
     response['success'] = true;
     res.status(200).json(response);
-  }, function (error) {
+  }, error => {
     errorHandler.handle(error, res);
   });
-}
+};
 
 exports.resetPassword = function (req, res) {
   Parse.User.requestPasswordReset("email@example.com", {
@@ -268,5 +221,5 @@ exports.resetPassword = function (req, res) {
       alert("Error: " + error.code + " " + error.message);
     }
   });
-}
+};
 

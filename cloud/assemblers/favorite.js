@@ -1,18 +1,17 @@
 const restaurantAssembler = require('./restaurant');
 const selectedCollectionAssembler = require('./selectedCollection');
+const userAssembler = require('./user');
 
-exports.assemble = function(source, lat, lon){
+exports.assemble = function(source){
   const favorite = {};
 	if (source !== undefined) {
 		favorite['id'] = source.id;
 		favorite['type'] = source.get('type');
 		if (source.get('user') !== undefined) {
-      const user = {};
-			user['id'] = source.get('user').id;
-			favorite['user'] = user;
+			favorite['user'] = userAssembler.assemble(source.get('user'));
 		}
 		if (source.get('restaurant') !== undefined) {
-      favorite['restaurant'] = restaurantAssembler.assemble(source.get('restaurant'), lat, lon);
+      favorite['restaurant'] = restaurantAssembler.assemble(source.get('restaurant'));
 		}
 		if (source.get('selected_collection') !== undefined) {
       favorite['selected_collection'] = selectedCollectionAssembler.assemble(source.get('selected_collection'));
