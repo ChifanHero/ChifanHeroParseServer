@@ -65,14 +65,11 @@ app.use(mountPath, function (req, res, next) {
   if (sessionToken === undefined) {
     next();
   } else {
-    Parse.User.become(sessionToken).then(function (user) {
+    Parse.User.become(sessionToken).then(user => {
       req.user = user;
       next();
-    }, function (error) {
-      const validationError = {};
-      validationError.message = error.message;
-      validationError.code = error.code;
-      res.status(401).json(validationError);
+    }, error => {
+      res.status(401).json(error);
     });
   }
 

@@ -7,7 +7,9 @@ exports.assemble = function(source) {
 		user['username'] = source.get('username');
 		user['nick_name'] = source.get('nick_name');
 		user['email'] = source.get('email');
-		user['picture'] = imageAssembler.assemble(source.get('picture'));
+		if (source.get('picture') !== undefined) {
+      user['picture'] = imageAssembler.assemble(source.get('picture')); 
+    }
 	}
 	return user;
 };

@@ -1,11 +1,10 @@
-var _ = require('underscore');
-var favoriteAssembler = require('../assemblers/favorite');
-var errorHandler = require('../errorHandler');
+const _ = require('underscore');
+const favoriteAssembler = require('../assemblers/favorite');
+const errorHandler = require('../errorHandler');
 
-var Favorite = Parse.Object.extend('Favorite');
-var Restaurant = Parse.Object.extend('Restaurant');
-var Dish = Parse.Object.extend('Dish');
-var SelectedCollection = Parse.Object.extend('SelectedCollection');
+const Favorite = Parse.Object.extend('Favorite');
+const Restaurant = Parse.Object.extend('Restaurant');
+const SelectedCollection = Parse.Object.extend('SelectedCollection');
 
 
 /**
@@ -14,50 +13,43 @@ var SelectedCollection = Parse.Object.extend('SelectedCollection');
  * @param res
  */
 exports.addByUserSession = function (req, res) {
-  var user = req.user;
-  var type = req.body['type'];
-  var objectId = req.body['object_id'];
+  const user = req.user;
+  const type = req.body['type'];
+  const objectId = req.body['object_id'];
 
-  if (user == undefined) {
-    var error = new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Invalid session token");
-    errorHandler.handle(error, res);
+  if (user === undefined) {
+    errorHandler.handleCustomizedError(400, "Missing user session token", res);
   }
 
   if (!validateParameters(type)) {
-    var error = new Parse.Error(Parse.Error.INVALID_QUERY, "The parameter \'type\' has invalid value");
-    errorHandler.handle(error, res);
+    errorHandler.handleCustomizedError(400, "The parameter \'type\' has invalid value", res);
   }
 
-  var favorite = new Favorite();
-  if (type === 'dish') {
-    var dish = new Dish();
-    dish.id = objectId;
-    favorite.set('type', type);
-    favorite.set('user', user);
-    favorite.set('dish', dish);
-  } else if (type === 'restaurant') {
-    var restaurant = new Restaurant();
+  const favorite = new Favorite();
+  if (type === 'restaurant') {
+    const restaurant = new Restaurant();
     restaurant.id = objectId;
     favorite.set('type', type);
     favorite.set('user', user);
     favorite.set('restaurant', restaurant);
   } else if (type === 'selected_collection') {
-    var selectedCollection = new SelectedCollection();
+    const selectedCollection = new SelectedCollection();
     selectedCollection.id = objectId;
     favorite.set('type', type);
     favorite.set('user', user);
     favorite.set('selected_collection', selectedCollection);
   }
-  favorite.save().then(function (result) {
-    var favoriteRes = favoriteAssembler.assemble(result);
-    var response = {};
-    response['result'] = favoriteRes;
+  favorite.save().then(result => {
+    const favoriteRes = favoriteAssembler.assemble(result);
+    const response = {
+      'result': favoriteRes
+    };
     res.status(201).json(response);
   }, function (error) {
     errorHandler.handle(error, res);
   });
 
-}
+};
 
 /**
  * Find favorite by user
@@ -65,48 +57,39 @@ exports.addByUserSession = function (req, res) {
  * @param res
  */
 exports.findAllFavoritesByUserSession = function (req, res) {
-  var type = req.query['type'];
-  var lat = parseFloat(req.query['lat']);
-  var lon = parseFloat(req.query['lon']);
-  var user = req.user;
-  if (user == undefined) {
-    var error = new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Invalid session token");
-    errorHandler.handle(error, res);
+  const type = req.query['type'];
+  const user = req.user;
+  if (user === undefined) {
+    errorHandler.handleCustomizedError(400, "Missing user session token", res);
   }
 
   if (!validateParameters(type)) {
-    var error = new Parse.Error(Parse.Error.INVALID_QUERY, "The parameter \'type\' has invalid value");
-    errorHandler.handle(error, res);
+    errorHandler.handleCustomizedError(400, "The parameter \'type\' has invalid value", res);
   }
 
-  var query = new Parse.Query(Favorite);
+  const query = new Parse.Query(Favorite);
   query.equalTo('user', user);
   query.equalTo('type', type);
-  query.limit(10);
-
-  query.include('dish.from_restaurant');
-  query.include('dish.image');
   query.include('restaurant');
   query.include('restaurant.image');
   query.include('selected_collection');
   query.include('selected_collection.cell_image');
 
-  query.find().then(function (results) {
-    var favorites = [];
-    if (results != undefined && results.length > 0) {
-      _.each(results, function (result) {
-        var favorite = favoriteAssembler.assemble(result, lat, lon);
-        favorites.push(favorite);
+  query.find().then(results => {
+    const response = {
+      'results': []
+    };
+    if (results !== undefined && results.length > 0) {
+      _.each(results, result => {
+        response['results'].push(favoriteAssembler.assemble(result));
       });
     }
-    var response = {};
-    response['results'] = favorites;
     res.status(200).json(response);
   }, function (error) {
     errorHandler.handle(error, res);
   });
 
-}
+};
 
 /**
  * Delete favorite by user
@@ -114,90 +97,30 @@ exports.findAllFavoritesByUserSession = function (req, res) {
  * @param res
  */
 exports.deleteByUserSession = function (req, res) {
-  var user = req.user;
-  var type = req.body['type'];
-  var objectId = req.body['object_id'];
-  var query = new Parse.Query(Favorite);
+  const user = req.user;
+  const type = req.body['type'];
+  const objectId = req.body['object_id'];
+  const query = new Parse.Query(Favorite);
   query.equalTo('user', user);
-  if (type === 'dish') {
-    var dish = new Dish();
-    dish.id = objectId;
-    query.equalTo('dish', dish);
-  } else if (type === 'restaurant') {
-    var restaurant = new Restaurant();
+  if (type === 'restaurant') {
+    const restaurant = new Restaurant();
     restaurant.id = objectId;
     query.equalTo('restaurant', restaurant);
   } else if (type === 'selected_collection') {
-    var selectedCollection = new SelectedCollection();
+    const selectedCollection = new SelectedCollection();
     selectedCollection.id = objectId;
     query.equalTo('selected_collection', selectedCollection);
   }
-  query.find().then(function (results) {
+  query.find().then(results => {
     return Parse.Object.destroyAll(results);
-  }).then(function () {
+  }).then(() => {
     res.status(200).json({});
-  }, function (error) {
+  }, error => {
     errorHandler.handle(error, res);
   });
-}
-
-/**
- * Check whether favorite belongs to user
- * @param req
- * @param res
- */
-exports.checkIsUserFavorite = function (req, res) {
-  var user = req.user
-  var type = req.query['type']
-  var objectId = req.query['id']
-  if (user == undefined) {
-    var error = new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "Invalid session token");
-    errorHandler.handle(error, res);
-  }
-
-  if (!validateParameters(type)) {
-    var error = new Parse.Error(Parse.Error.INVALID_QUERY, "The parameter \'type\' has invalid value");
-    errorHandler.handle(error, res);
-  }
-
-  var query = new Parse.Query(Favorite);
-  query.equalTo('user', user);
-  query.equalTo('type', type);
-  if (type == "restaurant") {
-    var restaurant = {
-      __type: "Pointer",
-      className: "Restaurant",
-      objectId: objectId
-    };
-    query.equalTo('restaurant', restaurant);
-  } else if (type == "selected_collection") {
-    var selected_collection = {
-      __type: "Pointer",
-      className: "SelectedCollection",
-      objectId: objectId
-    };
-    query.equalTo('selected_collection', selected_collection);
-  }
-
-  query.find().then(function (results) {
-    if (results != undefined && results.length > 0) {
-      var response = {};
-      response['result'] = true;
-      res.status(200).json(response);
-      return;
-    }
-    var response = {};
-    response['result'] = false;
-    res.status(200).json(response);
-  }, function (error) {
-    errorHandler.handle(error, res);
-  });
-}
+};
 
 
 function validateParameters(type) {
-  if (type !== 'dish' && type !== 'restaurant' && type !== 'selected_collection') {
-    return false;
-  }
-  return true;
+  return !(type !== 'restaurant' && type !== 'selected_collection');
 }

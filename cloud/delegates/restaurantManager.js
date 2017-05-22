@@ -3,14 +3,14 @@
 const Restaurant = Parse.Object.extend('Restaurant');
 const Image = Parse.Object.extend('Image');
 const Review = Parse.Object.extend('Review');
-const RestaurantCandidate = Parse.Object.extend('RestaurantCandidate');
-const Dish = Parse.Object.extend('Dish');
+const RecommendedDish = Parse.Object.extend('RecommendedDish');
 const _ = require('underscore');
 const restaurantAssembler = require('../assemblers/restaurant');
 const errorHandler = require('../errorHandler');
 const imageAssembler = require('../assemblers/image');
 const googlePhotoAssembler = require('../assemblers/googlePhoto');
 const reviewAssembler = require('../assemblers/review');
+const recommendedDishAssembler = require('../assemblers/recommendedDish');
 
 const google = require('../util/googlePlace.js');
 
@@ -30,11 +30,11 @@ exports.findRestaurantById = function (req, res) {
     latitude = parseFloat(req.query.lat);
   }
   const p1 = findRestaurantById(id);
-  const p2 = findHotDishesByRestaurantId(id);
+  const p2 = findRecommendedDishesByRestaurantId(id);
   const p3 = findReviewsByRestaurantId(id);
   const p4 = findPhotosByRestaurantId(id);
   const p5 = findGoogleRestaurantById(id);
-  Parse.Promise.when(p1, p2, p3, p4, p5).then(function (restaurant, dishes, reviews, photos, restaurantFromGoogle) {
+  Parse.Promise.when(p1, p2, p3, p4, p5).then(function (restaurant, recommendedDishes, reviews, photos, restaurantFromGoogle) {
     const restaurantRes = restaurantAssembler.assemble(restaurant);
     restaurantRes['review_info'] = {
       "total_count": 0,
@@ -44,6 +44,13 @@ exports.findRestaurantById = function (req, res) {
       "total_count": 0,
       "photos": []
     };
+    
+    restaurantRes['recommended_dishes'] = [];
+    if (recommendedDishes !== undefined) {
+      _.each(recommendedDishes, item => {
+        restaurantRes['recommended_dishes'].push(recommendedDishAssembler.assemble(item));
+      });
+    }
     
     if (reviews !== undefined) {
       restaurantRes['review_info']['total_count'] = reviews['total_count'];
@@ -134,23 +141,20 @@ function findGoogleRestaurantById(id) {
   return promise;
 }
 
-function findHotDishesByRestaurantId(id) {
-  const rest = new Restaurant();
-  rest.id = id;
-  const query = new Parse.Query(Dish);
-  query.equalTo('from_restaurant', rest);
+function findRecommendedDishesByRestaurantId(id) {
+  const restaurant = new Restaurant();
+  restaurant.id = id;
+  const query = new Parse.Query(RecommendedDish);
+  query.equalTo('restaurant', restaurant);
   query.include('image');
-  query.descending("like_count");
-  query.limit(10);
+  query.descending("recommendation_count");
   return query.find();
 }
 
 function findReviewsByRestaurantId(id) {
-  const reviewLimit = 3;
   const promise = new Parse.Promise();
   const reviewQuery = new Parse.Query(Review);
   reviewQuery.descending('updatedAt');
-  reviewQuery.limit(reviewLimit);
   reviewQuery.include('user');
   reviewQuery.include('user.picture');
   reviewQuery.exists('content');
@@ -158,12 +162,11 @@ function findReviewsByRestaurantId(id) {
   restaurant.id = id;
   reviewQuery.equalTo('restaurant', restaurant);
 
-  const p1 = reviewQuery.find();
-  const p2 = reviewQuery.count();
-  Parse.Promise.when(p1, p2).then(function (reviews, count) {
-    const result = {};
-    result['reviews'] = reviews;
-    result['total_count'] = Math.min(count, reviewLimit);
+  reviewQuery.find().then(reviews => {
+    const result = {
+      'reviews': reviews,
+      'total_count': reviews.length
+    };
     promise.resolve(result);
   });
   return promise;

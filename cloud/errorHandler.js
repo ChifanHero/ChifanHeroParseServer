@@ -1,4 +1,3 @@
-// https://parse.com/docs/js/guide#errors
 const ERROR_CODE_MAP = {
   '-1': 520,
   '1': 500,
@@ -79,12 +78,21 @@ const ERROR_CODE_MAP = {
 };
 
 exports.handle = function (error, res) {
-  const response = {};
-  response['error'] = error;
-  const status = 500;
+  const response = {
+    'error': error
+  };
+  let status = 500;
   if (error !== undefined) {
-    const code = error.code;
-    const status = ERROR_CODE_MAP[code];
+    status = ERROR_CODE_MAP[error.code];
   }
+  res.status(status).json(response);
+};
+
+exports.handleCustomizedError = function (status, message, res) {
+  const response = {
+    'error': {
+      'message': message
+    }
+  };
   res.status(status).json(response);
 };

@@ -1,49 +1,28 @@
-var _Image = Parse.Object.extend('Image');
-var fs = require('fs');
-
 Parse.Cloud.beforeSave(Parse.User, function (request, response) {
-  var userToSave = request.object;
+  const userToSave = request.object;
+  if (userToSave.isNew()) {
+    response.success();
+    return;
+  }
   if (userToSave.dirty('picture')) {
-    var oldUser = new Parse.Query(Parse.User);
-    oldUser.equalTo("objectId", userToSave.id);
-    oldUser.find().then(function (oldUsers) {
-      if (oldUsers != undefined && oldUsers.length > 0) {
-        var oldUser = oldUsers[0];
-        var image = oldUser.get("picture");
-        if (image != undefined) {
-          var imageId = image.id;
-          console.log("image id is ".concat(imageId));
-          var image = new _Image();
-          image.id = imageId;
-          image.destroy().then(function () {
-            console.log("successfully deleted old image");
+    const oldUserQuery = new Parse.Query(Parse.User);
+    oldUserQuery.get(userToSave.id).then(oldUser => {
+      if (oldUser !== undefined) {
+        const image = oldUser.get("picture");
+        if (image !== undefined) {
+          image.destroy().then(() => {
             response.success();
-          }, function (error) {
-            response.success();
+          }, error => {
+            response.reject(error);
           });
         } else {
           response.success();
         }
       }
-
-    }, function (error) {
+    }, error => {
       response.reject(error);
     });
-  }
-  if (userToSave.dirty('points')) {
-    var points = userToSave.get('points');
-    var levelThresholds = config['user']['level_thresholds'];
-    var levelNames = config['user']['level_names'];
-    var level = 0;
-    var index = 0;
-    while (index < levelThresholds.length && points >= levelThresholds[index]) {
-      index++;
-      level++;
-    }
-    var levelName = levelNames[level - 1];
-    userToSave.set('level', level);
-    userToSave.set('levelName', levelName);
+  } else {
     response.success();
   }
-
 });
