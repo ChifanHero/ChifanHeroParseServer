@@ -4,6 +4,7 @@ const Restaurant = Parse.Object.extend('Restaurant');
 const Image = Parse.Object.extend('Image');
 const Review = Parse.Object.extend('Review');
 const RecommendedDish = Parse.Object.extend('RecommendedDish');
+const Favorite = Parse.Object.extend('Favorite');
 const _ = require('underscore');
 const restaurantAssembler = require('../assemblers/restaurant');
 const errorHandler = require('../errorHandler');
@@ -21,6 +22,7 @@ const google = require('../util/googlePlace.js');
  */
 exports.findRestaurantById = function (req, res) {
   const id = req.params.id;
+  const currentUser = req.user;
   let longitude = undefined;
   let latitude = undefined;
   if (req.query.lon !== undefined) {
@@ -34,7 +36,8 @@ exports.findRestaurantById = function (req, res) {
   const p3 = findReviewsByRestaurantId(id);
   const p4 = findPhotosByRestaurantId(id);
   const p5 = findGoogleRestaurantById(id);
-  Parse.Promise.when(p1, p2, p3, p4, p5).then(function (restaurant, recommendedDishes, reviews, photos, restaurantFromGoogle) {
+  const p6 = checkIfCurrentUserFavorite(id, currentUser);
+  Parse.Promise.when(p1, p2, p3, p4, p5, p6).then(function (restaurant, recommendedDishes, reviews, photos, restaurantFromGoogle, isCurrentUserFavorite) {
     const restaurantRes = restaurantAssembler.assemble(restaurant);
     restaurantRes['review_info'] = {
       "total_count": 0,
@@ -102,8 +105,12 @@ exports.findRestaurantById = function (req, res) {
         }
       }
     }
-    let response = {};
-    response['result'] = restaurantRes;
+    if (isCurrentUserFavorite !== undefined) {
+      restaurantRes['current_user_favorite'] = isCurrentUserFavorite;
+    }
+    const response = {
+      'result': restaurantRes
+    };
     res.status(200).json(response);
   }, function (error) {
     errorHandler.handle(error, res);
@@ -186,6 +193,27 @@ function findPhotosByRestaurantId(id) {
     result['photos'] = photos;
     result['total_count'] = count;
     promise.resolve(result);
+  });
+  return promise;
+}
+
+function checkIfCurrentUserFavorite(id, user) {
+  const promise = new Parse.Promise();
+  if (user === undefined) {
+    promise.resolve();
+    return promise;
+  }
+  const query = new Parse.Query(Favorite);
+  const restaurant = new Restaurant();
+  restaurant.id = id;
+  query.equalTo('restaurant', restaurant);
+  query.equalTo('user', user);
+  query.first().then(first => {
+    if (first !== undefined) {
+      promise.resolve(true);
+    } else {
+      promise.resolve(false);
+    }
   });
   return promise;
 }
