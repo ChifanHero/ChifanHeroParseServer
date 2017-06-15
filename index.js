@@ -101,7 +101,7 @@ app.get('/parse/favorites', favoriteManager.findAllFavoritesByUserSession);
 
 app.get('/parse/selectedCollections/:id', selectedCollectionManager.findSelectedCollectionById);
 app.get('/parse/selectedCollections', selectedCollectionManager.findAllSelectedCollectionsGivenCenterAndRadius);
-app.get('/parse/restaurantCollectionMembers/:id', selectedCollectionManager.findAllRestaurantMembersById);
+app.get('/parse/selectedCollections/:id/restaurantCollectionMembers', selectedCollectionManager.findAllRestaurantMembersById);
 
 app.get('/parse/cities', cityManager.findCitiesWithPrefix);
 app.get('/parse/hotCities', cityManager.findAllHotCities);
@@ -120,10 +120,10 @@ app.post('/parse/users/update', userManager.update);
 app.post('/parse/users/logOut', userManager.logOut);
 app.post('/parse/reviews', reviewManager.createReview);
 app.post('/parse/recommendedDishes', recommendedDishManager.upsertRecommendedDish);
+app.post('/parse/restaurantCollectionMemCan', selectedCollectionManager.nominateRestaurant);
 
 //PUT
 app.put('/parse/restaurants/:id', restaurantManager.updateRestaurantById);
-app.put('/parse/restaurantCollectionMemCan', selectedCollectionManager.nominateRestaurant);
 
 //DELETE
 app.delete('/parse/favorites', favoriteManager.deleteByUserSession);
