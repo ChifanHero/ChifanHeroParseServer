@@ -15,10 +15,16 @@
     "parse-server": "~2.2.2",
     "underscore": "latest",
     "parse-dashboard": "latest",
-    "parse-image": "latest"
+    "sharp": "latest"
+  },
+  "devDependencies": {
+    "chai": "latest",
+    "chai-http": "latest",
+    "mocha": "latest"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "mocha"
   },
   "engines": {
     "node": ">=4.3"
