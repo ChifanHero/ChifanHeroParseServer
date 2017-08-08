@@ -17,7 +17,8 @@ const userActivityManager = require('./cloud/delegates/userActivityManager');
 const recommendedDishManager = require('./cloud/delegates/recommendedDishManager');
 
 const devEnv = {
-  dbURI: "mongodb://aws:aws@ds015780.mlab.com:15780/lightning-staging",
+  //dbURI: "mongodb://aws:aws@ds015780.mlab.com:15780/lightning-staging",
+  dbURI: "mongodb://readwrite:readwrite@ec2-34-212-245-174.us-west-2.compute.amazonaws.com:27017/chifanhero?authSource=admin",
   appId: "28BX7btLUKGGsFGCSyGGv9Pzj1nCWDl9EV6GpMBQ",
   masterKey: "rj0pEKLhfWX8310qDj9s0rUEAo4ukQJrTNtCP11j",
   serverURL: "http://localhost:1337/parse",

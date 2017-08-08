@@ -10,8 +10,8 @@ const google = require('../util/googlePlace.js');
 Parse.Cloud.beforeSave('Restaurant', function (request, response) {
   const restaurantToSave = request.object;
   if (restaurantToSave.isNew()) {
-    restaurantToSave.set('rating', 0);
-    restaurantToSave.set('rating_count', 0);
+    restaurantToSave.set('user_rating', 0);
+    restaurantToSave.set('user_rating_count', 0);
     restaurantToSave.set('favorite_count', 0);
     if (restaurantToSave.get('google_place_id') !== undefined) {
       getCoordinatesFromGoogle(restaurantToSave.get('google_place_id')).then(coordinate => {
@@ -54,11 +54,15 @@ Parse.Cloud.beforeSave('Restaurant', function (request, response) {
     if (restaurantToSave.get('score_5') !== undefined) {
       score5 = restaurantToSave.get('score_5');
     }
-    const ratingCount = score1 + score2 + score3 + score4 + score5;
-    let rating = (score1 + score2 * 2 + score3 * 3 + score4 * 4 + score5 * 5) / ratingCount;
-    rating = parseFloat(rating.toFixed(1));
-    restaurantToSave.set('rating', rating);
-    restaurantToSave.set('rating_count', ratingCount);
+    const userRatingCount = score1 + score2 + score3 + score4 + score5;
+    let userRating = (score1 + score2 * 2 + score3 * 3 + score4 * 4 + score5 * 5) / userRatingCount;
+    let totalRating = mergeRating(userRating, userRatingCount, restaurantToSave.get('google_rating'));
+    userRating = parseFloat(userRating.toFixed(1));
+    totalRating = parseFloat(totalRating.toFixed(1));
+    
+    restaurantToSave.set('user_rating', userRating);
+    restaurantToSave.set('user_rating_count', userRatingCount);
+    restaurantToSave.set('total_rating', totalRating);
     response.success();
   } else {
     response.success();
@@ -70,6 +74,18 @@ Parse.Cloud.afterDelete('Restaurant', function (request) {
   const restaurant = request.object;
   deleteRelatedRecords(restaurant);
 });
+
+function mergeRating(chifanHeroRating, chifanHeroRatingCount, googleRating) {
+  let googleRatingCount = 15; // Assume every restaurant has 15 ratings
+  if (googleRating === undefined) {
+    googleRating = 0;
+    googleRatingCount = 0;
+  }
+  if (chifanHeroRating !== undefined && chifanHeroRatingCount !== undefined) {
+    return parseFloat(((chifanHeroRating * chifanHeroRatingCount + googleRating * googleRatingCount) / (chifanHeroRatingCount + googleRatingCount)).toFixed(1));
+  }
+  return googleRating;
+}
 
 
 /*
