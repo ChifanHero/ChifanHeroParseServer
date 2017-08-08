@@ -5,12 +5,11 @@ exports.assemble = function(source) {
 	if (source !== undefined) {
 		restaurant['id'] = source.id;
 		restaurant['name'] = source.get('name');
-		restaurant['english_name'] = source.get('english_name');
+		restaurant['google_name'] = source.get('google_name');
 		restaurant['favorite_count'] = source.get('favorite_count');
-    if (source.get('rating') !== undefined) {
-      restaurant['rating'] = parseFloat(source.get('rating').toFixed(1)); 
+    if (source.get('total_rating') !== undefined) {
+      restaurant['total_rating'] = parseFloat(source.get('total_rating').toFixed(1)); 
     }
-    restaurant['rating_count'] = source.get('rating_count');
     restaurant['google_place_id'] = source.get('google_place_id');
     if (source.get('coordinate') !== undefined) {
       restaurant['coordinate'] = {

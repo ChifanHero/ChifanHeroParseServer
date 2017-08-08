@@ -78,7 +78,6 @@ exports.findRestaurantById = function (req, res) {
       restaurantRes['english_name'] = restaurantFromGoogle.result.name;
       restaurantRes['address'] = restaurantFromGoogle.result.formatted_address;
       restaurantRes['phone'] = restaurantFromGoogle.result.formatted_phone_number;
-      restaurantRes['rating'] = mergeRating(restaurantRes['rating'], restaurantRes['rating_count'], restaurantFromGoogle.result.rating);
       for (let i = 0; i < restaurantFromGoogle.result.address_components.length; i++) {
         if(restaurantFromGoogle.result.address_components[i].types[0] === 'locality') {
           restaurantRes['city'] = restaurantFromGoogle.result.address_components[i].long_name;
@@ -141,7 +140,7 @@ function findGoogleRestaurantById(id) {
   const promise = new Parse.Promise();
   const query = new Parse.Query(Restaurant);
   query.get(id).then(restaurant => {
-    google.client().placeDetail('ChIJl41rEWC1j4AR9m5ndL7k-Js').then(restaurantFromGoogle => {
+    google.client().placeDetail(restaurant.get('google_place_id')).then(restaurantFromGoogle => {
       promise.resolve(restaurantFromGoogle);
     });
   });
@@ -216,14 +215,6 @@ function checkIfCurrentUserFavorite(id, user) {
     }
   });
   return promise;
-}
-
-function mergeRating(chifanHeroRating, chifanHeroRatingCount, googleRating) {
-  const googleRatingCount = 15; // Assume every restaurant has 15 ratings
-  if (chifanHeroRating !== undefined && chifanHeroRatingCount !== undefined) {
-    return parseFloat(((chifanHeroRating * chifanHeroRatingCount + googleRating * googleRatingCount) / (chifanHeroRatingCount + googleRatingCount)).toFixed(1));
-  }
-  return googleRating;
 }
 
 /**
