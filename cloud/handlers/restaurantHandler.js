@@ -62,7 +62,7 @@ Parse.Cloud.beforeSave('Restaurant', function (request, response) {
     
     restaurantToSave.set('user_rating', userRating);
     restaurantToSave.set('user_rating_count', userRatingCount);
-    restaurantToSave.set('total_rating', totalRating);
+    restaurantToSave.set('rating', totalRating);
     response.success();
   } else {
     response.success();
