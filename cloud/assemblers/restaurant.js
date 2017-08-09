@@ -7,8 +7,8 @@ exports.assemble = function(source) {
 		restaurant['name'] = source.get('name');
 		restaurant['google_name'] = source.get('google_name');
 		restaurant['favorite_count'] = source.get('favorite_count');
-    if (source.get('total_rating') !== undefined) {
-      restaurant['total_rating'] = parseFloat(source.get('total_rating').toFixed(1)); 
+    if (source.get('rating') !== undefined) {
+      restaurant['rating'] = parseFloat(source.get('rating').toFixed(1)); 
     }
     restaurant['google_place_id'] = source.get('google_place_id');
     if (source.get('coordinate') !== undefined) {
