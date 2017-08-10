@@ -25,8 +25,10 @@ exports.getHomePages = function (req, res) {
       hottest = dedupe(hottest, recommended.concat(nearest));
       placement++;
     }
-    homepageSections.push(assembleResults(hottest, "热门餐厅", placement, latitude, longitude));
-    placement++;
+    if (hottest.length >= 3) {
+      homepageSections.push(assembleResults(hottest, "热门餐厅", placement, latitude, longitude));
+      placement++;
+    }
     homepageSections.push(assembleResults(nearest, "离您最近", placement, latitude, longitude));
     response['homepagesections'] = homepageSections;
     res.status(200).json(response);
@@ -44,7 +46,8 @@ function findNearestRestaurants(limit, latitude, longitude) {
     query.limit(limit);
   }
   const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
-  query.near("coordinate", userGeoPoint);
+  query.near("coordinates", userGeoPoint);
+  query.notEqualTo('blacklisted', true);
 
   query.find().then(function (results) {
     promise.resolve(results);
@@ -64,7 +67,7 @@ function findRecomendedRestaurants(limit, latitude, longitude) {
     query.limit(limit);
   }
   const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
-  query.withinMiles("coordinate", userGeoPoint, 5);
+  query.withinMiles("coordinates", userGeoPoint, 5);
   query.find().then(function (results) {
     promise.resolve(results);
   }, function (error) {
@@ -83,7 +86,9 @@ function findHotestRestaurants(limit, latitude, longitude) {
     query.limit(limit);
   }
   const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
-  query.withinMiles("coordinate", userGeoPoint, 30);
+  query.withinMiles("coordinates", userGeoPoint, 30);
+  query.equalTo('is_recommendation_candidate', true);
+  query.notEqualTo('blacklisted', true);
   
   query.find().then(function (results) {
     promise.resolve(results);
