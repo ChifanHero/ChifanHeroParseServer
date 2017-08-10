@@ -14,8 +14,8 @@ Parse.Cloud.beforeSave('Restaurant', function (request, response) {
     restaurantToSave.set('user_rating_count', 0);
     restaurantToSave.set('favorite_count', 0);
     if (restaurantToSave.get('google_place_id') !== undefined) {
-      getCoordinatesFromGoogle(restaurantToSave.get('google_place_id')).then(coordinate => {
-        restaurantToSave.set('coordinate', coordinate);
+      getCoordinatesFromGoogle(restaurantToSave.get('google_place_id')).then(coordinates => {
+        restaurantToSave.set('coordinates', coordinates);
         response.success();
       }, error => {
         response.error(error);
@@ -27,8 +27,8 @@ Parse.Cloud.beforeSave('Restaurant', function (request, response) {
   }
 
   if (restaurantToSave.dirty('google_place_id')) {
-    getCoordinatesFromGoogle(restaurantToSave.get('google_place_id')).then(coordinate => {
-      restaurantToSave.set('coordinate', coordinate);
+    getCoordinatesFromGoogle(restaurantToSave.get('google_place_id')).then(coordinates => {
+      restaurantToSave.set('coordinates', coordinates);
       response.success();
     }, error => {
       response.error(error);
