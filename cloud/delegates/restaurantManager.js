@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const Restaurant = Parse.Object.extend('Restaurant');
 const Image = Parse.Object.extend('Image');

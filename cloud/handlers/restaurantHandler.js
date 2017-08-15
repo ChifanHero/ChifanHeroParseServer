@@ -6,6 +6,7 @@ const Restaurant = Parse.Object.extend('Restaurant');
 const Image = Parse.Object.extend('Image');
 
 const google = require('../util/googlePlace.js');
+const ratingUtil = require('../util/ratingUtil.js');
 
 Parse.Cloud.beforeSave('Restaurant', function (request, response) {
   const restaurantToSave = request.object;
@@ -55,8 +56,11 @@ Parse.Cloud.beforeSave('Restaurant', function (request, response) {
       score5 = restaurantToSave.get('score_5');
     }
     const userRatingCount = score1 + score2 + score3 + score4 + score5;
-    let userRating = (score1 + score2 * 2 + score3 * 3 + score4 * 4 + score5 * 5) / userRatingCount;
-    let totalRating = mergeRating(userRating, userRatingCount, restaurantToSave.get('google_rating'));
+    let userRating = 0;
+    if (userRatingCount !== 0) {
+      userRating = (score1 + score2 * 2 + score3 * 3 + score4 * 4 + score5 * 5) / userRatingCount;
+    }
+    let totalRating = ratingUtil.mergeRating(userRating, userRatingCount, restaurantToSave.get('google_rating'));
     userRating = parseFloat(userRating.toFixed(1));
     totalRating = parseFloat(totalRating.toFixed(1));
     
@@ -74,19 +78,6 @@ Parse.Cloud.afterDelete('Restaurant', function (request) {
   const restaurant = request.object;
   deleteRelatedRecords(restaurant);
 });
-
-function mergeRating(chifanHeroRating, chifanHeroRatingCount, googleRating) {
-  let googleRatingCount = 15; // Assume every restaurant has 15 ratings
-  if (googleRating === undefined) {
-    googleRating = 0;
-    googleRatingCount = 0;
-  }
-  if (chifanHeroRating !== undefined && chifanHeroRatingCount !== undefined) {
-    return parseFloat(((chifanHeroRating * chifanHeroRatingCount + googleRating * googleRatingCount) / (chifanHeroRatingCount + googleRatingCount)).toFixed(1));
-  }
-  return googleRating;
-}
-
 
 /*
  * TODO: Delete RestaurantCollectionMember as well
