@@ -184,6 +184,7 @@ function findPhotosByRestaurantId(id) {
   const restaurant = new Restaurant();
   restaurant.id = id;
   query.equalTo('restaurant', restaurant);
+  query.descending('updatedAt');
 
   const p1 = query.find();
   const p2 = query.count();

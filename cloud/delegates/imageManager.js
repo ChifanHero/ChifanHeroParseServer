@@ -21,8 +21,8 @@ exports.uploadImage = function (req, res) {
   const p2 = createResizedImage(base64Code, THUMBNAIL_SIZE);
 
   Parse.Promise.when(p1, p2).then(function (originalBase64Code, thumbnailBase64Code) {
-    const originalImage = new Parse.File(type + ".jpeg", {base64: originalBase64Code});
-    const thumbnailImage = new Parse.File(type + ".jpeg", {base64: thumbnailBase64Code});
+    const originalImage = new Parse.File("CFH_" + type + ".jpeg", {base64: originalBase64Code});
+    const thumbnailImage = new Parse.File("CFH_" + type + ".jpeg", {base64: thumbnailBase64Code});
     const newImage = new Image();
     newImage.set("original", originalImage);
     newImage.set("thumbnail", thumbnailImage);
