@@ -89,6 +89,8 @@ app.get('/test', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/test.html'));
 });
 
+
+// Web homepage
 app.use("/",  express.static(__dirname + '/web'));
 app.get('/home', function (req, res) {
   res.sendFile(path.join(__dirname, '/web/index.html'));
