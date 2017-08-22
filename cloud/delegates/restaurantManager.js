@@ -74,7 +74,14 @@ exports.findRestaurantById = function (req, res) {
     }
     if (restaurantFromGoogle !== undefined) {
       restaurantRes['open_now'] = restaurantFromGoogle.result.opening_hours.open_now;
-      restaurantRes['open_time_today'] = restaurantFromGoogle.result.opening_hours.weekday_text[(new Date().getDay() + 6) % 7];
+      
+      // AWS is using UTC time, convert UTC to PST
+      // TODO: only works in PST time, need user local time
+      let day = new Date().getDay();
+      if (new Date().getHours() - 8 < 0) {
+        day += 6;
+      }
+      restaurantRes['open_time_today'] = restaurantFromGoogle.result.opening_hours.weekday_text[(day + 6) % 7];
       restaurantRes['english_name'] = restaurantFromGoogle.result.name;
       restaurantRes['address'] = restaurantFromGoogle.result.formatted_address;
       restaurantRes['phone'] = restaurantFromGoogle.result.formatted_phone_number;
