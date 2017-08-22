@@ -48,6 +48,7 @@ function findNearestRestaurants(limit, latitude, longitude) {
   const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
   query.near("coordinates", userGeoPoint);
   query.notEqualTo('blacklisted', true);
+  query.notEqualTo('on_hold', true);
 
   query.find().then(function (results) {
     promise.resolve(results);
@@ -68,6 +69,10 @@ function findRecomendedRestaurants(limit, latitude, longitude) {
   }
   const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
   query.withinMiles("coordinates", userGeoPoint, 5);
+  query.equalTo('is_recommendation_candidate', true);
+  query.notEqualTo('blacklisted', true);
+  query.notEqualTo('on_hold', true);
+  
   query.find().then(function (results) {
     promise.resolve(results);
   }, function (error) {
@@ -87,8 +92,8 @@ function findHotestRestaurants(limit, latitude, longitude) {
   }
   const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
   query.withinMiles("coordinates", userGeoPoint, 30);
-  query.equalTo('is_recommendation_candidate', true);
   query.notEqualTo('blacklisted', true);
+  query.notEqualTo('on_hold', true);
   
   query.find().then(function (results) {
     promise.resolve(results);
