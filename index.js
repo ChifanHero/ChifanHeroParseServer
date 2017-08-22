@@ -129,9 +129,7 @@ app.post('/parse/users/logOut', userManager.logOut);
 app.post('/parse/reviews', reviewManager.createReview);
 app.post('/parse/recommendedDishes', recommendedDishManager.upsertRecommendedDish);
 app.post('/parse/restaurantCollectionMemCan', selectedCollectionManager.nominateRestaurant);
-
-//PUT
-app.put('/parse/restaurants/:id', restaurantManager.updateRestaurantById);
+app.post('/parse/restaurants/:id', restaurantManager.updateRestaurantById);
 
 //DELETE
 app.delete('/parse/favorites', favoriteManager.deleteByUserSession);

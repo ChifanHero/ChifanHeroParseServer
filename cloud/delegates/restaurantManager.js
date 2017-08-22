@@ -226,7 +226,7 @@ function checkIfCurrentUserFavorite(id, user) {
 }
 
 /**
- * Update restaurant by Id. We only update restaurant image for now.
+ * Update restaurant by Id. We only update restaurant name for now.
  * @param req
  * @param res
  */
@@ -234,34 +234,15 @@ exports.updateRestaurantById = function (req, res) {
   const id = req.params.id;
   const restaurant = new Restaurant();
   restaurant.id = id;
-  const imageId = req.body["image_id"];
-  if (imageId !== undefined) {
-    const picture = {
-      __type: "Pointer",
-      className: "Image",
-      objectId: imageId
+  const name = req.body["name"];
+  restaurant.set('name', name);
+  
+  restaurant.save().then(restaurant => {
+    const response = {
+      'result': restaurantAssembler.assemble(restaurant)
     };
-    restaurant.set('image', picture)
-  }
-  restaurant.save().then(function (_restaurant) {
-    const restaurant = restaurantAssembler.assemble(_restaurant);
-    const image = _restaurant.get('image');
-    if (image !== undefined) {
-      image.fetch().then(function (_image) {
-        const imageRes = imageAssembler.assemble(_image);
-        const response = {};
-        restaurant['picture'] = imageRes;
-        response['result'] = restaurant;
-        res.status(200).json(response);
-      }, function (error) {
-        errorHandler.handle(error, res);
-      });
-    } else {
-      const response = {};
-      response['result'] = restaurant;
-      res.status(200).json(response);
-    }
-  }, function (error) {
+    res.status(200).json(response);
+  }, error => {
     errorHandler.handle(error, res);
   });
 };
