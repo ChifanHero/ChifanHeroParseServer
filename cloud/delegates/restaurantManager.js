@@ -235,7 +235,13 @@ exports.updateRestaurantById = function (req, res) {
   const restaurant = new Restaurant();
   restaurant.id = id;
   const name = req.body["name"];
-  restaurant.set('name', name);
+  const blacklisted = req.body["blacklisted"];
+  if (name !== undefined) {
+    restaurant.set('name', name); 
+  }
+  if (blacklisted !== undefined && typeof blacklisted === 'boolean') {
+    restaurant.set('blacklisted', blacklisted);
+  }
   
   restaurant.save().then(restaurant => {
     const response = {
