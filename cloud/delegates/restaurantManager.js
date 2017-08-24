@@ -21,8 +21,7 @@ const google = require('../util/googlePlace.js');
  * @param res
  */
 exports.findRestaurantById = function (req, res) {
-  console.log('ABC');
-  console.log('DEF');
+  console.log('CFH_GetRestaurant');
   const id = req.params.id;
   const currentUser = req.user;
   let longitude = undefined;
@@ -39,7 +38,7 @@ exports.findRestaurantById = function (req, res) {
   const p4 = findPhotosByRestaurantId(id);
   const p5 = findGoogleRestaurantById(id);
   const p6 = checkIfCurrentUserFavorite(id, currentUser);
-  Parse.Promise.when(p1, p2, p3, p4, p5, p6).then(function (restaurant, recommendedDishes, reviews, photos, restaurantFromGoogle, isCurrentUserFavorite) {
+  Parse.Promise.when(p1, p2, p3, p4, p5, p6).then((restaurant, recommendedDishes, reviews, photos, restaurantFromGoogle, isCurrentUserFavorite) => {
     const restaurantRes = restaurantAssembler.assemble(restaurant);
     restaurantRes['review_info'] = {
       "total_count": 0,
@@ -120,7 +119,8 @@ exports.findRestaurantById = function (req, res) {
       'result': restaurantRes
     };
     res.status(200).json(response);
-  }, function (error) {
+  }, error => {
+    console.error('Error_GetRestaurant');
     errorHandler.handle(error, res);
   });
 };

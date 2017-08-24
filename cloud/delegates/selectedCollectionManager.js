@@ -11,6 +11,7 @@ const _ = require('underscore');
 const COVERAGE_RADIUS = 100;
 
 exports.findSelectedCollectionById = function (req, res) {
+  console.log('CFH_GetSelectedCollection');
   const id = req.params.id;
   const query = new Parse.Query(SelectedCollection);
   query.include('cell_image');
@@ -20,11 +21,13 @@ exports.findSelectedCollectionById = function (req, res) {
     };
     res.status(200).json(response);
   }, error => {
+    console.error('Error_GetSelectedCollection');
     errorHandler.handle(error, res);
   });
 };
 
 exports.findAllSelectedCollectionsGivenCenterAndRadius = function (req, res) {
+  console.log('CFH_GetAllSelectedCollections');
   if (req.query.lat === undefined || req.query.lon === undefined) {
     errorHandler.handleCustomizedError(400, "Latitude and longitude are required", res);
     return;
@@ -49,11 +52,13 @@ exports.findAllSelectedCollectionsGivenCenterAndRadius = function (req, res) {
     }
     res.status(200).json(response);
   }, error => {
+    console.error('Error_GetAllSelectedCollections');
     errorHandler.handle(error, res);
   });
 };
 
 exports.findAllRestaurantMembersById = function (req, res) {
+  console.log('CFH_GetAllRestaurantMembers');
   const id = req.params.id;
   const selectedCollection = new SelectedCollection();
   selectedCollection.id = id;
@@ -72,11 +77,13 @@ exports.findAllRestaurantMembersById = function (req, res) {
     }
     res.status(200).json(response);
   }, error => {
+    console.error('Error_GetAllRestaurantMembers');
     errorHandler.handle(error, res);
   });
 };
 
 exports.nominateRestaurant = function (req, res) {
+  console.log('CFH_NominateRestaurant');
   const collectionId = req.body["collection_id"];
   const restaurantId = req.body["restaurant_id"];
 

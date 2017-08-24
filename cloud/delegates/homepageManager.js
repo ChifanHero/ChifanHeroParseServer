@@ -6,6 +6,7 @@ const restaurantAssembler = require('../assemblers/restaurant');
 const errorHandler = require('../errorHandler');
 
 exports.getHomePages = function (req, res) {
+  console.log('CFH_GetHomePage');
   if (req.query.lat === undefined || req.query.lon === undefined) {
     const error = new Parse.Error(Parse.Error.INTERNAL_SERVER_ERROR, "Parameters lat and lon are required");
     errorHandler.handle(error, res);
@@ -33,6 +34,7 @@ exports.getHomePages = function (req, res) {
     response['homepagesections'] = homepageSections;
     res.status(200).json(response);
   }, function (error) {
+    console.error('Error_GetHomePage');
     errorHandler.handle(error, res);
   });
 };
