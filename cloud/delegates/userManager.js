@@ -1,3 +1,4 @@
+const Image = Parse.Object.extend('Image');
 const userAssembler = require('../assemblers/user');
 const imageAssembler = require('../assemblers/image');
 const errorHandler = require('../errorHandler');
@@ -186,8 +187,14 @@ exports.update = function (req, res) {
   const user = req.user;
 
   const nickName = req.body['nick_name'];
+  const pictureId = req.body['pictureId'];
   if (nickName !== undefined) {
     user.set('nick_name', nickName);
+  }
+  if (pictureId !== undefined) {
+    const picture = new Image();
+    picture.id = pictureId;
+    user.set('picture', picture);
   }
   user.save().then(updatedUser => {
     const response = {
