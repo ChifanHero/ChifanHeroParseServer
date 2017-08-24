@@ -9,6 +9,7 @@ const Restaurant = Parse.Object.extend('Restaurant');
 const reviewAssembler = require('../assemblers/review');
 
 exports.createReview = function (req, res) {
+  console.log('CFH_CreateReview');
   const user = req.user;
   const rating = req.body['rating'];
   const content = req.body['content'];
@@ -30,12 +31,14 @@ exports.createReview = function (req, res) {
     const response = {};
     response['result'] = reviewAssembler.assemble(savedReview);
     res.status(201).json(response);
-  }, function (error) {
+  }, error => {
+    console.error('Error_CreateReview');
     errorHandler.handle(error, res);
   });
 };
 
 exports.findAllReviewsOfOneRestaurant = function (req, res) {
+  console.log('CFH_GetAllReviews');
   const restaurantId = req.params.id;
   const skip = req.query["skip"];
   const limit = req.query["limit"];
@@ -56,18 +59,20 @@ exports.findAllReviewsOfOneRestaurant = function (req, res) {
   reviewQuery.find().then(reviews => {
     const response = {};
     const results = [];
-    _.each(reviews, function (review) {
+    _.each(reviews, review => {
       results.push(reviewAssembler.assemble(review));
     });
 
     response['results'] = results;
     res.status(200).json(response);
-  }, function (error) {
+  }, error => {
+    console.error('Error_GetAllReviews');
     errorHandler.handle(error, res);
   });
 };
 
 exports.findReviewById = function (req, res) {
+  console.log('CFH_GetReview');
   const id = req.params.id;
   const reviewQuery = new Parse.Query(Review);
   
@@ -82,7 +87,7 @@ exports.findReviewById = function (req, res) {
   imageQuery.equalTo('review', review);
   const p2 = imageQuery.find();
   
-  Parse.Promise.when(p1, p2).then(function (review, photos) {
+  Parse.Promise.when(p1, p2).then((review, photos) => {
     if (review !== undefined) {
       const result = reviewAssembler.assemble(review, photos);
       const response = {};
@@ -91,7 +96,8 @@ exports.findReviewById = function (req, res) {
     } else {
       res.status(404).json({});
     }
-  }, function (error) {
+  }, error => {
+    console.error('Error_GetReview');
     errorHandler.handle(error, res);
   });
 };

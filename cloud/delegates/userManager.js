@@ -110,7 +110,7 @@ const newOauthUser = function (accessToken, oauthLogin) {
 };
 
 exports.logIn = function (req, res) {
-  
+  console.log('CFH_LogIn');
   const username = req.body['username'];
   const encodedPassword = req.body['password'];
   Parse.User.logIn(username, encodedPassword).then(fetchedUser => {
@@ -134,14 +134,15 @@ exports.logIn = function (req, res) {
       response['user'] = user;
       res.status(200).json(response);
     }
-  }, function (error) {
+  }, error => {
+    console.error('Error_LogIn');
     errorHandler.handle(error, res);
   });
 };
 
 
 exports.signUp = function (req, res) {
-  
+  console.log('CFH_SignUp');
   const username = req.body['username'];
   const encodedPassword = req.body['password'];
   const email = username;
@@ -172,13 +173,14 @@ exports.signUp = function (req, res) {
     };
     res.status(201).json(response);
   }, error => {
+    console.error('Error_SignUp');
     errorHandler.handle(error, res);
   });
 
 };
 
 exports.update = function (req, res) {
-
+  console.log('CFH_UpdateUserInfo');
   //If session token is invalid, Parse will handle that
   //We don't need to verify session token
   const user = req.user;
@@ -195,18 +197,20 @@ exports.update = function (req, res) {
     };
     res.status(200).json(response);
   }, error => {
+    console.error('Error_UpdateUserInfo');
     errorHandler.handle(error, res);
   });
 };
 
 exports.logOut = function (req, res) {
-
+  console.log('CFH_LogOut');
   //User-Session is required in HTTP header
   Parse.User.logOut().then(() => {
     const response = {};
     response['success'] = true;
     res.status(200).json(response);
   }, error => {
+    console.error('Error_LogOut');
     errorHandler.handle(error, res);
   });
 };
