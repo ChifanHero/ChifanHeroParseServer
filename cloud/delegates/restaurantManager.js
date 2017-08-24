@@ -21,6 +21,8 @@ const google = require('../util/googlePlace.js');
  * @param res
  */
 exports.findRestaurantById = function (req, res) {
+  console.log('ABC');
+  console.log('DEF');
   const id = req.params.id;
   const currentUser = req.user;
   let longitude = undefined;
