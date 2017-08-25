@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const Restaurant = Parse.Object.extend('Restaurant');
 const Image = Parse.Object.extend('Image');
@@ -21,6 +21,7 @@ const google = require('../util/googlePlace.js');
  * @param res
  */
 exports.findRestaurantById = function (req, res) {
+  console.log('CFH_GetRestaurant');
   const id = req.params.id;
   const currentUser = req.user;
   let longitude = undefined;
@@ -37,7 +38,7 @@ exports.findRestaurantById = function (req, res) {
   const p4 = findPhotosByRestaurantId(id);
   const p5 = findGoogleRestaurantById(id);
   const p6 = checkIfCurrentUserFavorite(id, currentUser);
-  Parse.Promise.when(p1, p2, p3, p4, p5, p6).then(function (restaurant, recommendedDishes, reviews, photos, restaurantFromGoogle, isCurrentUserFavorite) {
+  Parse.Promise.when(p1, p2, p3, p4, p5, p6).then((restaurant, recommendedDishes, reviews, photos, restaurantFromGoogle, isCurrentUserFavorite) => {
     const restaurantRes = restaurantAssembler.assemble(restaurant);
     restaurantRes['review_info'] = {
       "total_count": 0,
@@ -72,13 +73,23 @@ exports.findRestaurantById = function (req, res) {
       }
       mergePhotosIntoReviews(restaurantRes['review_info']['reviews'], restaurantRes['photo_info']['photos']);
     }
+    
     if (restaurantFromGoogle !== undefined) {
-      restaurantRes['open_now'] = restaurantFromGoogle.result.opening_hours.open_now;
-      restaurantRes['open_time_today'] = restaurantFromGoogle.result.opening_hours.weekday_text[(new Date().getDay() + 6) % 7];
+      if (restaurantFromGoogle.result.opening_hours !== undefined) {
+        if (restaurantFromGoogle.result.opening_hours.open_now !== undefined) {
+          restaurantRes['open_now'] = restaurantFromGoogle.result.opening_hours.open_now;
+        }
+        // AWS is using UTC time, convert UTC to PST
+        // TODO: only works in PST time, need user local time
+        let day = new Date().getDay();
+        if (new Date().getHours() - 8 < 0) {
+          day += 6;
+        }
+        restaurantRes['open_time_today'] = restaurantFromGoogle.result.opening_hours.weekday_text[(day + 6) % 7];
+      }
       restaurantRes['english_name'] = restaurantFromGoogle.result.name;
       restaurantRes['address'] = restaurantFromGoogle.result.formatted_address;
       restaurantRes['phone'] = restaurantFromGoogle.result.formatted_phone_number;
-      restaurantRes['rating'] = mergeRating(restaurantRes['rating'], restaurantRes['rating_count'], restaurantFromGoogle.result.rating);
       for (let i = 0; i < restaurantFromGoogle.result.address_components.length; i++) {
         if(restaurantFromGoogle.result.address_components[i].types[0] === 'locality') {
           restaurantRes['city'] = restaurantFromGoogle.result.address_components[i].long_name;
@@ -91,7 +102,7 @@ exports.findRestaurantById = function (req, res) {
         });
         restaurantRes['photo_info']['total_count'] += restaurantFromGoogle.result.photos.length;
       }
-
+      
       if (latitude !== undefined && longitude !== undefined) {
         const startPoint = new Parse.GeoPoint(latitude, longitude);
         const destination = new Parse.GeoPoint(restaurantFromGoogle.result.geometry.location.lat, restaurantFromGoogle.result.geometry.location.lng);
@@ -112,7 +123,8 @@ exports.findRestaurantById = function (req, res) {
       'result': restaurantRes
     };
     res.status(200).json(response);
-  }, function (error) {
+  }, error => {
+    console.error('Error_GetRestaurant');
     errorHandler.handle(error, res);
   });
 };
@@ -141,7 +153,7 @@ function findGoogleRestaurantById(id) {
   const promise = new Parse.Promise();
   const query = new Parse.Query(Restaurant);
   query.get(id).then(restaurant => {
-    google.client().placeDetail('ChIJl41rEWC1j4AR9m5ndL7k-Js').then(restaurantFromGoogle => {
+    google.client().placeDetail(restaurant.get('google_place_id')).then(restaurantFromGoogle => {
       promise.resolve(restaurantFromGoogle);
     });
   });
@@ -185,6 +197,7 @@ function findPhotosByRestaurantId(id) {
   const restaurant = new Restaurant();
   restaurant.id = id;
   query.equalTo('restaurant', restaurant);
+  query.descending('updatedAt');
 
   const p1 = query.find();
   const p2 = query.count();
@@ -218,16 +231,8 @@ function checkIfCurrentUserFavorite(id, user) {
   return promise;
 }
 
-function mergeRating(chifanHeroRating, chifanHeroRatingCount, googleRating) {
-  const googleRatingCount = 15; // Assume every restaurant has 15 ratings
-  if (chifanHeroRating !== undefined && chifanHeroRatingCount !== undefined) {
-    return parseFloat(((chifanHeroRating * chifanHeroRatingCount + googleRating * googleRatingCount) / (chifanHeroRatingCount + googleRatingCount)).toFixed(1));
-  }
-  return googleRating;
-}
-
 /**
- * Update restaurant by Id. We only update restaurant image for now.
+ * Update restaurant by Id. We only update restaurant name for now.
  * @param req
  * @param res
  */
@@ -235,34 +240,21 @@ exports.updateRestaurantById = function (req, res) {
   const id = req.params.id;
   const restaurant = new Restaurant();
   restaurant.id = id;
-  const imageId = req.body["image_id"];
-  if (imageId !== undefined) {
-    const picture = {
-      __type: "Pointer",
-      className: "Image",
-      objectId: imageId
-    };
-    restaurant.set('image', picture)
+  const name = req.body["name"];
+  const blacklisted = req.body["blacklisted"];
+  if (name !== undefined) {
+    restaurant.set('name', name); 
   }
-  restaurant.save().then(function (_restaurant) {
-    const restaurant = restaurantAssembler.assemble(_restaurant);
-    const image = _restaurant.get('image');
-    if (image !== undefined) {
-      image.fetch().then(function (_image) {
-        const imageRes = imageAssembler.assemble(_image);
-        const response = {};
-        restaurant['picture'] = imageRes;
-        response['result'] = restaurant;
-        res.status(200).json(response);
-      }, function (error) {
-        errorHandler.handle(error, res);
-      });
-    } else {
-      const response = {};
-      response['result'] = restaurant;
-      res.status(200).json(response);
-    }
-  }, function (error) {
+  if (blacklisted !== undefined && typeof blacklisted === 'boolean') {
+    restaurant.set('blacklisted', blacklisted);
+  }
+  
+  restaurant.save().then(restaurant => {
+    const response = {
+      'result': restaurantAssembler.assemble(restaurant)
+    };
+    res.status(200).json(response);
+  }, error => {
     errorHandler.handle(error, res);
   });
 };

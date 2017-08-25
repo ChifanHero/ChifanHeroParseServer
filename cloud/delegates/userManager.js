@@ -1,3 +1,4 @@
+const Image = Parse.Object.extend('Image');
 const userAssembler = require('../assemblers/user');
 const imageAssembler = require('../assemblers/image');
 const errorHandler = require('../errorHandler');
@@ -110,7 +111,7 @@ const newOauthUser = function (accessToken, oauthLogin) {
 };
 
 exports.logIn = function (req, res) {
-  
+  console.log('CFH_LogIn');
   const username = req.body['username'];
   const encodedPassword = req.body['password'];
   Parse.User.logIn(username, encodedPassword).then(fetchedUser => {
@@ -134,14 +135,15 @@ exports.logIn = function (req, res) {
       response['user'] = user;
       res.status(200).json(response);
     }
-  }, function (error) {
+  }, error => {
+    console.error('Error_LogIn');
     errorHandler.handle(error, res);
   });
 };
 
 
 exports.signUp = function (req, res) {
-  
+  console.log('CFH_SignUp');
   const username = req.body['username'];
   const encodedPassword = req.body['password'];
   const email = username;
@@ -172,20 +174,27 @@ exports.signUp = function (req, res) {
     };
     res.status(201).json(response);
   }, error => {
+    console.error('Error_SignUp');
     errorHandler.handle(error, res);
   });
 
 };
 
 exports.update = function (req, res) {
-
+  console.log('CFH_UpdateUserInfo');
   //If session token is invalid, Parse will handle that
   //We don't need to verify session token
   const user = req.user;
 
   const nickName = req.body['nick_name'];
+  const pictureId = req.body['pictureId'];
   if (nickName !== undefined) {
     user.set('nick_name', nickName);
+  }
+  if (pictureId !== undefined) {
+    const picture = new Image();
+    picture.id = pictureId;
+    user.set('picture', picture);
   }
   user.save().then(updatedUser => {
     const response = {
@@ -195,18 +204,20 @@ exports.update = function (req, res) {
     };
     res.status(200).json(response);
   }, error => {
+    console.error('Error_UpdateUserInfo');
     errorHandler.handle(error, res);
   });
 };
 
 exports.logOut = function (req, res) {
-
+  console.log('CFH_LogOut');
   //User-Session is required in HTTP header
   Parse.User.logOut().then(() => {
     const response = {};
     response['success'] = true;
     res.status(200).json(response);
   }, error => {
+    console.error('Error_LogOut');
     errorHandler.handle(error, res);
   });
 };

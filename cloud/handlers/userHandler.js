@@ -1,3 +1,5 @@
+'use strict';
+
 Parse.Cloud.beforeSave(Parse.User, function (request, response) {
   const userToSave = request.object;
   if (userToSave.isNew()) {

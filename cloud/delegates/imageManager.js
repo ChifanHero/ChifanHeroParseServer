@@ -12,6 +12,7 @@ const ORIGINAL_SIZE = 800;
 const THUMBNAIL_SIZE = 100;
 
 exports.uploadImage = function (req, res) {
+  console.log('CFH_UploadImage');
   const restaurantId = req.body["restaurant_id"];
   const reviewId = req.body['review_id'];
   const type = req.body["type"];
@@ -21,8 +22,8 @@ exports.uploadImage = function (req, res) {
   const p2 = createResizedImage(base64Code, THUMBNAIL_SIZE);
 
   Parse.Promise.when(p1, p2).then(function (originalBase64Code, thumbnailBase64Code) {
-    const originalImage = new Parse.File(type + ".jpeg", {base64: originalBase64Code});
-    const thumbnailImage = new Parse.File(type + ".jpeg", {base64: thumbnailBase64Code});
+    const originalImage = new Parse.File("CFH_" + type + ".jpeg", {base64: originalBase64Code});
+    const thumbnailImage = new Parse.File("CFH_" + type + ".jpeg", {base64: thumbnailBase64Code});
     const newImage = new Image();
     newImage.set("original", originalImage);
     newImage.set("thumbnail", thumbnailImage);
@@ -44,12 +45,14 @@ exports.uploadImage = function (req, res) {
       response['result'] = imageRes;
       res.status(201).json(response);
     }, function (error) {
+      console.error('Error_UploadImage');
       errorHandler.handle(error, res);
     });
   });
 };
 
 exports.findAllImagesOfOneRestaurant = function (req, res) {
+  console.log('CFH_GetAllImages');
   const restaurantId = req.param.id;
   const restaurant = {
     __type: "Pointer",
@@ -70,6 +73,7 @@ exports.findAllImagesOfOneRestaurant = function (req, res) {
     response['results'] = results;
     res.status(200).json(response)
   }, function (error) {
+    console.error('Error_GetAllImages');
     errorHandler.handle(error, res);
   });
 };

@@ -1,48 +1,44 @@
-var City = Parse.Object.extend('City');
-var errorHandler = require('../errorHandler');
-var cityAssembler = require('../assemblers/city');
-var _ = require('underscore');
+const City = Parse.Object.extend('City');
+const errorHandler = require('../errorHandler');
+const cityAssembler = require('../assemblers/city');
+const _ = require('underscore');
 
 exports.findCitiesWithPrefix = function (req, res) {
-  var prefix = req.query['prefix'];
-  var query = new Parse.Query(City);
+  const prefix = req.query['prefix'];
+  const query = new Parse.Query(City);
   query.startsWith('name', prefix);
-  query.limit(200);
-  query.find().then(function (results) {
-    console.log(results.length);
-    var cities = [];
-    if (results != undefined && results.length > 0) {
-      _.each(results, function (result) {
-        var city = cityAssembler.assemble(result);
-        cities.push(city);
+  query.limit(20);
+  query.find().then(cities => {
+    const response = {
+      'results': []
+    };
+    if (cities !== undefined && cities.length > 0) {
+      _.each(cities, city => {
+        response['results'].push(cityAssembler.assemble(city));
       });
     }
-    var response = {};
     response['results'] = cities;
     res.status(200).json(response);
-  }, function (error) {
+  }, error => {
     errorHandler.handle(error, res);
   });
 };
 
 exports.findAllHotCities = function (req, res) {
-  var query = new Parse.Query(City);
-  query.limit(5);
+  const query = new Parse.Query(City);
   query.equalTo("activated", true);
   query.descending("member_count");
-  query.find().then(function (results) {
-    console.log(results.length);
-    var cities = [];
-    if (results != undefined && results.length > 0) {
-      _.each(results, function (result) {
-        var city = cityAssembler.assemble(result);
-        cities.push(city);
+  query.find().then(cities => {
+    const response = {
+      'results': []
+    };
+    if (cities !== undefined && cities.length > 0) {
+      _.each(cities, city => {
+        response['results'].push(cityAssembler.assemble(city));
       });
     }
-    var response = {};
-    response['results'] = cities;
     res.status(200).json(response);
-  }, function (error) {
+  }, error => {
     errorHandler.handle(error, res);
   });
 };

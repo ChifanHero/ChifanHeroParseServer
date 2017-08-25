@@ -6,16 +6,17 @@ const Restaurant = Parse.Object.extend('Restaurant');
 const Image = Parse.Object.extend('Image');
 
 const google = require('../util/googlePlace.js');
+const ratingUtil = require('../util/ratingUtil.js');
 
 Parse.Cloud.beforeSave('Restaurant', function (request, response) {
   const restaurantToSave = request.object;
   if (restaurantToSave.isNew()) {
-    restaurantToSave.set('rating', 0);
-    restaurantToSave.set('rating_count', 0);
+    restaurantToSave.set('user_rating', 0);
+    restaurantToSave.set('user_rating_count', 0);
     restaurantToSave.set('favorite_count', 0);
     if (restaurantToSave.get('google_place_id') !== undefined) {
-      getCoordinatesFromGoogle(restaurantToSave.get('google_place_id')).then(coordinate => {
-        restaurantToSave.set('coordinate', coordinate);
+      getCoordinatesFromGoogle(restaurantToSave.get('google_place_id')).then(coordinates => {
+        restaurantToSave.set('coordinates', coordinates);
         response.success();
       }, error => {
         response.error(error);
@@ -27,8 +28,8 @@ Parse.Cloud.beforeSave('Restaurant', function (request, response) {
   }
 
   if (restaurantToSave.dirty('google_place_id')) {
-    getCoordinatesFromGoogle(restaurantToSave.get('google_place_id')).then(coordinate => {
-      restaurantToSave.set('coordinate', coordinate);
+    getCoordinatesFromGoogle(restaurantToSave.get('google_place_id')).then(coordinates => {
+      restaurantToSave.set('coordinates', coordinates);
       response.success();
     }, error => {
       response.error(error);
@@ -54,11 +55,18 @@ Parse.Cloud.beforeSave('Restaurant', function (request, response) {
     if (restaurantToSave.get('score_5') !== undefined) {
       score5 = restaurantToSave.get('score_5');
     }
-    const ratingCount = score1 + score2 + score3 + score4 + score5;
-    let rating = (score1 + score2 * 2 + score3 * 3 + score4 * 4 + score5 * 5) / ratingCount;
-    rating = parseFloat(rating.toFixed(1));
-    restaurantToSave.set('rating', rating);
-    restaurantToSave.set('rating_count', ratingCount);
+    const userRatingCount = score1 + score2 + score3 + score4 + score5;
+    let userRating = 0;
+    if (userRatingCount !== 0) {
+      userRating = (score1 + score2 * 2 + score3 * 3 + score4 * 4 + score5 * 5) / userRatingCount;
+    }
+    let totalRating = ratingUtil.mergeRating(userRating, userRatingCount, restaurantToSave.get('google_rating'));
+    userRating = parseFloat(userRating.toFixed(1));
+    totalRating = parseFloat(totalRating.toFixed(1));
+    
+    restaurantToSave.set('user_rating', userRating);
+    restaurantToSave.set('user_rating_count', userRatingCount);
+    restaurantToSave.set('rating', totalRating);
     response.success();
   } else {
     response.success();
@@ -70,7 +78,6 @@ Parse.Cloud.afterDelete('Restaurant', function (request) {
   const restaurant = request.object;
   deleteRelatedRecords(restaurant);
 });
-
 
 /*
  * TODO: Delete RestaurantCollectionMember as well

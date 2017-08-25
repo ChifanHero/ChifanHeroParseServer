@@ -1,0 +1,57 @@
+/*
+#1 color = #4ACCD1;
+#2 color = #3fbbc0;
+*/
+
+a:hover,
+a:focus {
+    color: #fe5000;
+}
+
+.circled {
+	background: #fe5000;
+}
+
+.con1 > div, .con2 > div, .con3 > div { 
+	background-color: #fe5000;
+}
+
+.scrollup:hover {
+	background: #fe5000;
+}
+
+
+/* button */
+.btn-skin {
+  background-color: #fe5000;
+  border-color: #fe5000;
+}
+
+
+/* menu */
+
+.navbar-custom ul.nav ul.dropdown-menu li a:hover {
+	color: #fe5000;
+}
+.navbar-custom.top-nav-collapse .nav li a:hover,
+.navbar-custom .nav li a:hover,
+.navbar-custom .nav li.active a,.navbar-custom.top-nav-collapse .nav li.active a  {
+    color: #fe5000;
+}
+
+
+
+.bg-skin {
+	background: #fe5000;
+}
+
+.highlight-color {
+	background-color: #fe5000;
+}
+.color {
+	color: #fe5000;
+}
+
+.form-control:focus {
+  border-color: #fe5000;
+}
