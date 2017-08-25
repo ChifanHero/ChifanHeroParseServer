@@ -73,16 +73,20 @@ exports.findRestaurantById = function (req, res) {
       }
       mergePhotosIntoReviews(restaurantRes['review_info']['reviews'], restaurantRes['photo_info']['photos']);
     }
+    
     if (restaurantFromGoogle !== undefined) {
-      restaurantRes['open_now'] = restaurantFromGoogle.result.opening_hours.open_now;
-      
-      // AWS is using UTC time, convert UTC to PST
-      // TODO: only works in PST time, need user local time
-      let day = new Date().getDay();
-      if (new Date().getHours() - 8 < 0) {
-        day += 6;
+      if (restaurantFromGoogle.result.opening_hours !== undefined) {
+        if (restaurantFromGoogle.result.opening_hours.open_now !== undefined) {
+          restaurantRes['open_now'] = restaurantFromGoogle.result.opening_hours.open_now;
+        }
+        // AWS is using UTC time, convert UTC to PST
+        // TODO: only works in PST time, need user local time
+        let day = new Date().getDay();
+        if (new Date().getHours() - 8 < 0) {
+          day += 6;
+        }
+        restaurantRes['open_time_today'] = restaurantFromGoogle.result.opening_hours.weekday_text[(day + 6) % 7];
       }
-      restaurantRes['open_time_today'] = restaurantFromGoogle.result.opening_hours.weekday_text[(day + 6) % 7];
       restaurantRes['english_name'] = restaurantFromGoogle.result.name;
       restaurantRes['address'] = restaurantFromGoogle.result.formatted_address;
       restaurantRes['phone'] = restaurantFromGoogle.result.formatted_phone_number;
@@ -98,7 +102,7 @@ exports.findRestaurantById = function (req, res) {
         });
         restaurantRes['photo_info']['total_count'] += restaurantFromGoogle.result.photos.length;
       }
-
+      
       if (latitude !== undefined && longitude !== undefined) {
         const startPoint = new Parse.GeoPoint(latitude, longitude);
         const destination = new Parse.GeoPoint(restaurantFromGoogle.result.geometry.location.lat, restaurantFromGoogle.result.geometry.location.lng);
