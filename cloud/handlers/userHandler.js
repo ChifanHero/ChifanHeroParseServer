@@ -10,12 +10,16 @@ Parse.Cloud.beforeSave(Parse.User, function (request, response) {
     const oldUserQuery = new Parse.Query(Parse.User);
     oldUserQuery.get(userToSave.id).then(oldUser => {
       if (oldUser !== undefined) {
-        const image = oldUser.get("picture");
-        if (image !== undefined) {
-          image.destroy().then(() => {
+        const picture = oldUser.get("picture");
+        if (picture !== undefined) {
+          picture.destroy().then(() => {
             response.success();
           }, error => {
-            response.reject(error);
+            if (error.code === 101) { // Object not found for delete
+              response.success();
+            } else {
+              response.reject(error);  
+            }
           });
         } else {
           response.success();

@@ -1,3 +1,5 @@
+'use strict';
+
 const Image = Parse.Object.extend('Image');
 const userAssembler = require('../assemblers/user');
 const imageAssembler = require('../assemblers/image');
@@ -137,6 +139,21 @@ exports.logIn = function (req, res) {
     }
   }, error => {
     console.error('Error_LogIn');
+    errorHandler.handle(error, res);
+  });
+};
+
+exports.retrieveUserInfo = function (req, res) {
+  console.log('CFH_RetrieveUserInfo');
+  const query = new Parse.Query(Parse.User);
+  query.include('picture');
+  query.get(req.user.id).then(user => {
+    const assembledUser = userAssembler.assemble(user);
+    const response = {
+      'result': assembledUser
+    };
+    res.status(200).json(response);
+  }, error => {
     errorHandler.handle(error, res);
   });
 };
