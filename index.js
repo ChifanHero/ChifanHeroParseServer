@@ -117,6 +117,8 @@ app.get('/parse/hotCities', cityManager.findAllHotCities);
 app.get('/parse/homepages', homepageManager.getHomePages);
 app.get('/parse/reviews/:id', reviewManager.findReviewById);
 
+app.get('/parse/userInfo', userManager.retrieveUserInfo);
+
 //POST
 app.post('/parse/favorites', favoriteManager.addByUserSession);
 app.post('/parse/images', imageManager.uploadImage);

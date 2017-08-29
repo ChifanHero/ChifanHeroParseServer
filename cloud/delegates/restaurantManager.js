@@ -82,7 +82,7 @@ exports.findRestaurantById = function (req, res) {
         // AWS is using UTC time, convert UTC to PST
         // TODO: only works in PST time, need user local time
         let day = new Date().getDay();
-        if (new Date().getHours() - 8 < 0) {
+        if (new Date().getHours() - 7 < 0) {
           day += 6;
         }
         restaurantRes['open_time_today'] = restaurantFromGoogle.result.opening_hours.weekday_text[(day + 6) % 7];
