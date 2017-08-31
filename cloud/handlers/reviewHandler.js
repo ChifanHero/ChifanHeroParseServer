@@ -6,7 +6,6 @@ const Restaurant = Parse.Object.extend('Restaurant');
 Parse.Cloud.beforeSave('Review', function (request, response) {
   const reviewToSave = request.object;
   if (reviewToSave.dirty('rating')) {
-    
     const restaurant = reviewToSave.get('restaurant');
     const query = new Parse.Query(Restaurant);
     query.get(restaurant.id).then(restaurant => {

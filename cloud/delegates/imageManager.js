@@ -51,9 +51,11 @@ exports.uploadImage = function (req, res) {
   });
 };
 
+// Don't need this api for now
+/*
 exports.findAllImagesOfOneRestaurant = function (req, res) {
   console.log('CFH_GetAllImages');
-  const restaurantId = req.param.id;
+  const restaurantId = req.params.id;
   const restaurant = {
     __type: "Pointer",
     className: "Restaurant",
@@ -61,10 +63,10 @@ exports.findAllImagesOfOneRestaurant = function (req, res) {
   };
   const query = new Parse.Query(Image);
   query.equalTo('restaurant', restaurant);
-  query.find().then(function (images) {
+  query.find().then(images => {
     const results = [];
     if (images !== undefined && images.length > 0) {
-      _.each(images, function (image) {
+      _.each(images, image => {
         const result = imageAssembler.assemble(image);
         results.push(result);
       });
@@ -72,8 +74,26 @@ exports.findAllImagesOfOneRestaurant = function (req, res) {
     const response = {};
     response['results'] = results;
     res.status(200).json(response)
-  }, function (error) {
+  }, error => {
     console.error('Error_GetAllImages');
+    errorHandler.handle(error, res);
+  });
+};
+*/
+
+exports.deleteImages = function (req, res) {
+  console.log('CFH_DeleteImages');
+  const imageIdArray = req.body['image_ids'];
+  const toBeDeletedImages = [];
+  _.each(imageIdArray, imageId => {
+    const image = new Image();
+    image.id = imageId;
+    toBeDeletedImages.push(image);
+  });
+  Parse.Object.destroyAll(toBeDeletedImages).then(() => {
+    res.status(200).json({});
+  }, error => {
+    console.error('Error_DeleteImages');
     errorHandler.handle(error, res);
   });
 };
