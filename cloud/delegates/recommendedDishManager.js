@@ -30,7 +30,7 @@ exports.upsertRecommendedDish = function (req, res) {
   console.log('CFH_UpsertRecommendedDish');
   const user = req.user;
   const dishName = req.body['name'];
-  const restaurantId = req.body['restaurant_id'];
+  const restaurantId = req.params.id;
   const restaurant = new Restaurant();
   restaurant.id = restaurantId;
 

@@ -11,21 +11,29 @@ const reviewAssembler = require('../assemblers/review');
 exports.createReview = function (req, res) {
   console.log('CFH_CreateReview');
   const user = req.user;
+  if (user === undefined) {
+    errorHandler.handleCustomizedError(400, "User session token is required", res);
+    return;
+  }
   const rating = req.body['rating'];
   const content = req.body['content'];
-  const restaurantId = req.body['restaurant_id'];
+  const restaurantId = req.params.id;
+  
+  if (rating === undefined) {
+    errorHandler.handleCustomizedError(400, "Rating is required", res);
+    return;
+  }
   
   const review = new Review();
-  review.set('content', content);
+  if (context !== undefined) {
+    review.set('content', content);
+  }
   review.set('rating', rating);
   
   const restaurant = new Restaurant();
   restaurant.id = restaurantId;
   review.set('restaurant', restaurant);
-  
-  if (user !== undefined) {
-    review.set('user', user);
-  }
+  review.set('user', user);
   
   review.save().then(savedReview => {
     const response = {};
@@ -34,6 +42,36 @@ exports.createReview = function (req, res) {
   }, error => {
     console.error('Error_CreateReview');
     errorHandler.handle(error, res);
+  });
+};
+
+exports.updateReview = function (req, res) {
+  console.log('CFH_UpdateReview');
+  const user = req.user;
+  if (user === undefined) {
+    errorHandler.handleCustomizedError(400, "User session token is required", res);
+    return;
+  }
+  const rating = req.body['rating'];
+  const content = req.body['content'];
+  const reviewId = req.params.id;
+  
+  const query = new Parse.Query(Review);
+  query.get(reviewId).then(review => {
+    if (rating !== undefined) {
+      review.set('rating', rating);
+    }
+    if (content !== undefined) {
+      review.set('content', content);
+    }
+    review.save().then(savedReview => {
+      const response = {};
+      response['result'] = reviewAssembler.assemble(savedReview);
+      res.status(200).json(response);
+    }, error => {
+      console.error('Error_UpdateReview');
+      errorHandler.handle(error, res);
+    });
   });
 };
 
@@ -99,5 +137,41 @@ exports.findReviewById = function (req, res) {
   }, error => {
     console.error('Error_GetReview');
     errorHandler.handle(error, res);
+  });
+};
+
+exports.findReviewByRestaurantIdAndUserSession = function (req, res) {
+  console.log('CFH_GetReviewByRestaurantIdAndUserSession');
+  const restaurantId = req.params.id;
+  const user = req.user;
+  if (user === undefined) {
+    errorHandler.handleCustomizedError(400, "User session token is required", res);
+    return;
+  }
+  
+  const reviewQuery = new Parse.Query(Review);
+  reviewQuery.include('user');
+  reviewQuery.include('user.picture');
+  const restaurant = new Restaurant();
+  restaurant.id = restaurantId;
+  reviewQuery.equalTo('restaurant', restaurant);
+  reviewQuery.equalTo('user', user);
+  reviewQuery.find().then(reviews => {
+    if (reviews.length > 1) {
+      console.error('Error_User(' + user.id + ') has multiple reviews for a restaurant(' + restaurantId + ')');
+      errorHandler.handleCustomizedError(500, 'User should not have multiple reviews for one restaurant', res);
+    } else if (reviews.length === 1) {
+      const review = reviews[0];
+      const imageQuery = new Parse.Query(Image);
+      imageQuery.equalTo('review', review);
+      imageQuery.find().then(photos => {
+        const result = reviewAssembler.assemble(review, photos);
+        const response = {};
+        response['result'] = result;
+        res.status(200).json(response);
+      });
+    } else {
+      res.status(404).json({});
+    }
   });
 };
