@@ -36,6 +36,18 @@ const api = new ParseServer({
   serverURL: process.env.SERVER_URL || devEnv.serverURL,  // Don't forget to change to https if needed
   liveQuery: {
     classNames: ["Image"] // List of classes to support for query subscriptions
+  },
+  verifyUserEmails: true,
+  emailAdapter: {
+    module: 'parse-server-simple-mailgun-adapter',
+    options: {
+      // The address that your emails come from
+      fromAddress: 'noreply@mail.chifanhero.com',
+      // Your domain from mailgun.com
+      domain: 'mail.chifanhero.com',
+      // Your API key from mailgun.com
+      apiKey: 'key-57edf739c4830a0094f772422e46d5ee',
+    }
   }
 });
 
