@@ -25,7 +25,7 @@ exports.createReview = function (req, res) {
   }
   
   const review = new Review();
-  if (context !== undefined) {
+  if (content !== undefined) {
     review.set('content', content);
   }
   review.set('rating', rating);
