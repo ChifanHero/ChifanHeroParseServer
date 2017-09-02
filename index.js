@@ -38,6 +38,7 @@ const api = new ParseServer({
     classNames: ["Image"] // List of classes to support for query subscriptions
   },
   verifyUserEmails: true,
+  appName: process.env.APP_NAME || devEnv.appName,
   emailAdapter: {
     module: 'parse-server-simple-mailgun-adapter',
     options: {
