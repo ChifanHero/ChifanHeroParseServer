@@ -251,3 +251,43 @@ exports.resetPassword = function (req, res) {
   });
 };
 
+exports.changePassword = function (req, res) {
+  console.log("CFH_Change_Password");
+  const user = req.user;
+  var User = Parse.Object.extend("User");
+  const query = new Parse.Query(Parse.User);
+  query.get(user.id).then(retrivedUser => {
+    const userName = retrivedUser.get('username');
+    const oldPassword = req.body['old_password'];
+    const newPassword = req.body['new_password'];
+    Parse.User.logOut().then(() => {
+      Parse.User.logIn(userName, oldPassword).then(fetchedUser => {
+        fetchedUser.set("password", newPassword);
+        return fetchedUser.save();
+      }, error => {
+        console.error("Error_ChangePassword_LogInWithOldPasswordFailed");
+        errorHandler.handle(error, res);
+      }).then(() => {
+        return Parse.User.logIn(userName, newPassword);
+      }, error => {
+        console.error("Error_ChangePassword_SavePasswordFailed");
+        errorHandler.handle(error, res);
+      }).then(fetchedUser => {
+        const response = {
+          'success': true,
+          'new_session_token': fetchedUser.getSessionToken()
+        };
+        res.status(200).json(response);
+      }, error => {
+        console.error("Error_ChangePassword_LoginWithNewPasswordFailed");
+        errorHandler.handle(error, res);
+      });
+    }, error => {
+      console.error("Error_ChangePassword_LogOutFailed");
+      errorHandler.handle(error, res);
+    });
+  }, error => {
+    console.error("Error_ChangePassword_RetriveUserInfoFailed");
+    errorHandler.handle(error, res);
+  });
+}
