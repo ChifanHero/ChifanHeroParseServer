@@ -39,6 +39,7 @@ const api = new ParseServer({
   },
   verifyUserEmails: true,
   appName: process.env.APP_NAME || devEnv.appName,
+  publicServerURL: process.env.SERVER_URL || devEnv.serverURL,
   emailAdapter: {
     module: 'parse-server-simple-mailgun-adapter',
     options: {
