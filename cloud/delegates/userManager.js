@@ -248,6 +248,7 @@ exports.resetPassword = function (req, res) {
   query.find().then(users => {
     const response = {};
     if (users == undefined || users.length == 0) {
+      response['success'] = false;
       response['error'] = 'EMAIL_NOT_FOUND'
       res.status(404).json(response);
     } else {
@@ -317,7 +318,8 @@ exports.associateEmail = function (req, res) {
   query.find().then(users => {
     if (users != undefined && users.length > 0) {
       const response = {};
-      response['error'] = 'EMAIL_EXISTING'
+      response['success'] = false;
+      response['error'] = 'EMAIL_EXISTING';
       res.status(400).json(response);
     } else {
       user.set("email", email);
@@ -335,4 +337,39 @@ exports.associateEmail = function (req, res) {
     console.error('Error_AssociateEmail_UpdateEmailError');
     errorHandler.handle(error, res);
   });
+}
+
+exports.changeUsername = function (req, res) {
+  const user = req.user;
+  const username = req.body['new_username'];
+  var User = Parse.Object.extend("User");
+  const query = new Parse.Query(Parse.User);
+  query.equalTo('username', username);
+  query.find().then(users => {
+    if (users != undefined && users.length > 0) {
+      const response = {
+        'success': false,
+        'error' : 'USERNAME_EXISTING'
+      };
+      res.status(400).json(response);
+    } else {
+      user.set('username', username);
+      return user.save();
+    }
+  }, error => {
+    console.error('Error_ChangeUsername_FindUserNameError');
+    errorHandler.handle(error, res);
+  }).then(() => {
+    const response = {
+      'success': true
+    };
+    res.status(200).json(response);
+  }, error => {
+    console.error('Error_ChangeUsername_SaveUsernameError');
+    errorHandler.handle(error, res);
+  });
+}
+
+exports.newRandomUser = function (req, res) {
+
 }
