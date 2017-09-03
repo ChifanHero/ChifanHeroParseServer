@@ -307,3 +307,32 @@ exports.changePassword = function (req, res) {
     errorHandler.handle(error, res);
   });
 }
+
+exports.associateEmail = function (req, res) {
+  const user = req.user;
+  const email = req.body['email'];
+  var User = Parse.Object.extend("User");
+  const query = new Parse.Query(Parse.User);
+  query.equalTo('email', email);
+  query.find().then(users => {
+    if (users != undefined && users.length > 0) {
+      const response = {};
+      response['error'] = 'EMAIL_EXISTING'
+      res.status(400).json(response);
+    } else {
+      user.set("email", email);
+      return user.save();
+    }
+  }, error => {
+    console.error('Error_AssociateEmail_FindUserEmailError');
+    errorHandler.handle(error, res);
+  }).then(() => {
+    const response = {
+      'success': true
+    };
+    res.status(200).json(response);
+  }, error => {
+    console.error('Error_AssociateEmail_UpdateEmailError');
+    errorHandler.handle(error, res);
+  });
+}
