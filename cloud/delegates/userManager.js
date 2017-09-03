@@ -429,6 +429,7 @@ exports.newRandomUser = function (req, res) {
       'session_token': fetchedUser.getSessionToken()
     };
     const user = userAssembler.assemble(fetchedUser);
+    user['password'] = generatedPassword;
     const picture = fetchedUser.get('picture');
     if (picture !== undefined) {
       picture.fetch().then(fetchedPicture => {
