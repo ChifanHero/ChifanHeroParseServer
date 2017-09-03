@@ -144,6 +144,7 @@ app.post('/parse/users/logIn', userManager.logIn);
 app.post('/parse/users/update', userManager.update);
 app.post('/parse/users/logOut', userManager.logOut);
 app.post('/parse/users/changePassword', userManager.changePassword);
+app.post('/parse/users/resetPassword', userManager.resetPassword);
 app.post('/parse/reviews/:id', reviewManager.updateReview);
 app.post('/parse/restaurantCollectionMemCan', selectedCollectionManager.nominateRestaurant);
 app.post('/parse/restaurants/:id', restaurantManager.updateRestaurantById);

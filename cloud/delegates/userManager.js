@@ -240,14 +240,30 @@ exports.logOut = function (req, res) {
 };
 
 exports.resetPassword = function (req, res) {
-  Parse.User.requestPasswordReset("email@example.com", {
-    success: function () {
-      // Password reset request was sent successfully
-    },
-    error: function (error) {
-      // Show the error message somewhere
-      alert("Error: " + error.code + " " + error.message);
+  const email = req.body['email'];
+  var User = Parse.Object.extend("User");
+  const query = new Parse.Query(Parse.User);
+  query.equalTo('email', email);
+  query.equalTo('emailVerified', true);
+  query.find().then(users => {
+    const response = {};
+    if (users == undefined || users.length == 0) {
+      response['error'] = 'EMAIL_NOT_FOUND'
+      res.status(404).json(response);
+    } else {
+      return Parse.User.requestPasswordReset(email);
     }
+  }, error => {
+    console.error('Error_ResetPassword_FindUserEmailError');
+    errorHandler.handle(error, res);
+  }).then(() => {
+    const response = {
+      'success': true
+    };
+    res.status(200).json(response);
+  }, error => {
+    console.error('Error_ResetPassword_ResetError');
+    errorHandler.handle(error, res);
   });
 };
 
