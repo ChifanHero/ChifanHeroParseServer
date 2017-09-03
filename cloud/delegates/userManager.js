@@ -6,6 +6,9 @@ const imageAssembler = require('../assemblers/image');
 const errorHandler = require('../errorHandler');
 const Buffer = require('buffer').Buffer;
 const _ = require('underscore');
+const cryptoUtil = require('parse-server/lib/cryptoUtils');
+const KeyValueConfigs = Parse.Object.extend('KeyValueConfigs');
+const DefaultProfilePicture = Parse.Object.extend('DefaultProfilePicture');
 
 const TokenStorage = Parse.Object.extend('TokenStorage');
 
@@ -371,5 +374,100 @@ exports.changeUsername = function (req, res) {
 }
 
 exports.newRandomUser = function (req, res) {
+  // console.log(cryptoUtil.randomString(12));
+  const configQuery = new Parse.Query(KeyValueConfigs);
+  var generatedUsername;
+  var generatedPassword;
+  var generatedNickname;
+  var randomUser;
+  configQuery.equalTo('key', 'available_temp_users_count');
+  configQuery.find().then(configs => {
+    if (configs == undefined || configs.length != 1) {
+      console.error('Error_NewRandomUser_UnableToReadConfig');
+      res.status(500).send();
+    } else {
+      const config = configs[0];
+      const availableUsers = config.get('numberValue');
+      if (availableUsers >= 1) {
+        config.increment('numberValue', -1);
+        config.save();
+        generatedUsername = cryptoUtil.randomString(12);
+        generatedPassword = cryptoUtil.randomString(8);
+        return Parse.User.signUp(generatedUsername, generatedPassword);
+      } else {
+        const response = {
+          'error': 'NEW_ACCOUNT_NOT_AVAILABLE'
+        };
+        res.status(200).json(response);
+      }
+    }
+  }, error => {
+    console.error('Error_NewRandomUser_UnableToReadConfig');
+    errorHandler.handle(error, res);
+  }).then(newUser => {
+    randomUser = newUser;
+    return pickRandomProfilePic();
+  }, error => {
+    console.error('Error_NewRandomUser_UnableToCreateNewUser');
+    errorHandler.handle(error, res);
+  }).then(profilePic => {
+    generatedNickname = cryptoUtil.randomString(8);
+    randomUser.set('nick_name', generatedNickname);
+    randomUser.set('picture', profilePic);
+    return randomUser.save();
+  }, error => {
+    console.error('Error_NewRandomUser_UnableGetDefaultProfilePic');
+    errorHandler.handle(error, res);
+  }).then(() => {
+    return Parse.User.logIn(generatedUsername, generatedPassword);
+  }, error => {
+    console.error('Error_NewRandomUser_UnableToSaveNicknameAndProfilePic');
+    errorHandler.handle(error, res);
+  }).then(fetchedUser => {
+    const response = {
+      'success': true,
+      'session_token': fetchedUser.getSessionToken()
+    };
+    const user = userAssembler.assemble(fetchedUser);
+    const picture = fetchedUser.get('picture');
+    if (picture !== undefined) {
+      picture.fetch().then(fetchedPicture => {
+        const picture = imageAssembler.assemble(fetchedPicture);
+        user['picture'] = picture;
+        response['user'] = user;
+        res.status(200).json(response);
+      }, error => {
+        response['user'] = user;
+        res.status(200).json(response);
+      });
+    } else {
+      response['user'] = user;
+      res.status(200).json(response);
+    }
+  }, error => {
+    console.error('Error_NewRandomUser_UnableToSigninNewUser');
+    errorHandler.handle(error, res);
+  });
+}
 
+function pickRandomProfilePic() {
+  const promise = new Parse.Promise();
+  const query = new Parse.Query(DefaultProfilePicture);
+  query.find().then(pics => {
+    // google.client().placeDetail(restaurant.get('google_place_id')).then(restaurantFromGoogle => {
+    //   promise.resolve(restaurantFromGoogle);
+    // });
+    if (pics == null || pics.length == 0) {
+      console.error('Error_NewRandomUser_UnableToPickRandomProfilePic');
+      promise.fail('no pic found');
+    } else {
+      const index = Math.floor(Math.random() * pics.length);
+      const pic = pics[index];
+      promise.resolve(pic.get('image'));
+    }
+  }, error => {
+    console.error('Error_NewRandomUser_UnableToPickRandomProfilePic');
+    promise.fail(error);
+  });
+  return promise;
 }
