@@ -389,7 +389,6 @@ exports.newRandomUser = function (req, res) {
     if (configs == undefined || configs.length != 1) {
       console.error('Error_NewRandomUser_UnableToReadConfig');
       res.status(500).send();
-      return;
     } else {
       const config = configs[0];
       const availableUsers = config.get('numberValue');
@@ -404,13 +403,11 @@ exports.newRandomUser = function (req, res) {
           'error': 'NEW_ACCOUNT_NOT_AVAILABLE'
         };
         res.status(200).json(response);
-        return;
       }
     }
   }, error => {
     console.error('Error_NewRandomUser_UnableToReadConfig');
     errorHandler.handle(error, res);
-    return;
   }).then(newUser => {    
     if (newUser != undefined) {
       randomUser = newUser;
@@ -419,7 +416,6 @@ exports.newRandomUser = function (req, res) {
   }, error => {
     console.error('Error_NewRandomUser_UnableToCreateNewUser');
     errorHandler.handle(error, res);
-    return;
   }).then(profilePic => {
     if (randomUser != undefined) {
       generatedNickname = cryptoUtil.randomString(8);
