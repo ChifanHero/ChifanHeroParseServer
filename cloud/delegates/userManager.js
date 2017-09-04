@@ -16,6 +16,13 @@ const restrictedAcl = new Parse.ACL();
 restrictedAcl.setPublicReadAccess(false);
 restrictedAcl.setPublicWriteAccess(false);
 
+const ERROR_CODE_MAP = {
+  'EMAIL_EXISTING': 1000,
+  'USERNAME_EXISTING': 1001,
+  'NEW_ACCOUNT_NOT_AVAILABLE': 1002,
+  'EMAIL_NOT_FOUND': 1003
+};
+
 exports.oauthLogIn = function (req, res) {
   const oauthLogin = req.body["oauth_login"];
   const accessToken = req.body["access_token"];
@@ -208,6 +215,8 @@ exports.update = function (req, res) {
 
   const nickName = req.body['nick_name'];
   const pictureId = req.body['pictureId'];
+  const username = req.body['username'];
+  const email = req.body['email'];
   if (nickName !== undefined) {
     user.set('nick_name', nickName);
   }
@@ -215,6 +224,12 @@ exports.update = function (req, res) {
     const picture = new Image();
     picture.id = pictureId;
     user.set('picture', picture);
+  }
+  if (username != undefined) {
+    user.set('username', username);
+  }
+  if (email != undefined) {
+    user.set('email', email);
   }
   user.save().then(updatedUser => {
     const response = {
@@ -225,7 +240,14 @@ exports.update = function (req, res) {
     res.status(200).json(response);
   }, error => {
     console.error('Error_UpdateUserInfo');
-    errorHandler.handle(error, res);
+    const message = error['message'];
+    if (message == 'USERNAME_EXISTING') {
+      errorHandler.handleCustomizedError(400, ERROR_CODE_MAP['USERNAME_EXISTING'], "Username existing", res);
+    } else if (message == 'EMAIL_EXISTING') {
+      errorHandler.handleCustomizedError(400, ERROR_CODE_MAP['EMAIL_EXISTING'], "Email existing", res);
+    } else {
+      errorHandler.handle(error, res);
+    }
   });
 };
 
@@ -252,9 +274,7 @@ exports.resetPassword = function (req, res) {
   query.find().then(users => {
     const response = {};
     if (users == undefined || users.length == 0) {
-      response['success'] = false;
-      response['error'] = 'EMAIL_NOT_FOUND'
-      res.status(404).json(response);
+      errorHandler.handleCustomizedError(404, ERROR_CODE_MAP['EMAIL_NOT_FOUND'], "Email not found", res);
     } else {
       return Parse.User.requestPasswordReset(email);
     }
@@ -313,69 +333,6 @@ exports.changePassword = function (req, res) {
   });
 }
 
-exports.associateEmail = function (req, res) {
-  console.log("CFH_Associate_Email");
-  const user = req.user;
-  const email = req.body['email'];
-  var User = Parse.Object.extend("User");
-  const query = new Parse.Query(Parse.User);
-  query.equalTo('email', email);
-  query.find().then(users => {
-    if (users != undefined && users.length > 0) {
-      const response = {};
-      response['success'] = false;
-      response['error'] = 'EMAIL_EXISTING';
-      res.status(400).json(response);
-    } else {
-      user.set("email", email);
-      return user.save();
-    }
-  }, error => {
-    console.error('Error_AssociateEmail_FindUserEmailError');
-    errorHandler.handle(error, res);
-  }).then(() => {
-    const response = {
-      'success': true
-    };
-    res.status(200).json(response);
-  }, error => {
-    console.error('Error_AssociateEmail_UpdateEmailError');
-    errorHandler.handle(error, res);
-  });
-}
-
-exports.changeUsername = function (req, res) {
-  console.log("CFH_Change_Username");
-  const user = req.user;
-  const username = req.body['new_username'];
-  var User = Parse.Object.extend("User");
-  const query = new Parse.Query(Parse.User);
-  query.equalTo('username', username);
-  query.find().then(users => {
-    if (users != undefined && users.length > 0) {
-      const response = {
-        'success': false,
-        'error' : 'USERNAME_EXISTING'
-      };
-      res.status(400).json(response);
-    } else {
-      user.set('username', username);
-      return user.save();
-    }
-  }, error => {
-    console.error('Error_ChangeUsername_FindUserNameError');
-    errorHandler.handle(error, res);
-  }).then(() => {
-    const response = {
-      'success': true
-    };
-    res.status(200).json(response);
-  }, error => {
-    console.error('Error_ChangeUsername_SaveUsernameError');
-    errorHandler.handle(error, res);
-  });
-}
-
 exports.newRandomUser = function (req, res) {
   // console.log(cryptoUtil.randomString(12));
   console.log("CFH_New_RandomUser");
@@ -399,10 +356,7 @@ exports.newRandomUser = function (req, res) {
         generatedPassword = cryptoUtil.randomString(8);
         return Parse.User.signUp(generatedUsername, generatedPassword);
       } else {
-        const response = {
-          'error': 'NEW_ACCOUNT_NOT_AVAILABLE'
-        };
-        res.status(200).json(response);
+        errorHandler.handleCustomizedError(200, ERROR_CODE_MAP['NEW_ACCOUNT_NOT_AVAILABLE'], "New account not available", res);
       }
     }
   }, error => {
@@ -419,7 +373,10 @@ exports.newRandomUser = function (req, res) {
   }).then(profilePic => {
     if (randomUser != undefined) {
       generatedNickname = cryptoUtil.randomString(8);
+      randomUser.set('usingDefaultUsername', true);
+      randomUser.set('usingDefaultPassword', true);
       randomUser.set('nick_name', generatedNickname);
+      randomUser.set('usingDefaultNickname', true);
       randomUser.set('picture', profilePic);
       return randomUser.save();
     }

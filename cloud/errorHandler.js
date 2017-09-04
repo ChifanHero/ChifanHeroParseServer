@@ -74,7 +74,11 @@ const ERROR_CODE_MAP = {
   '251': 500,
   '252': 500,
   '253': 500,
-  '600': 500
+  '600': 500,
+  '1000': 400,
+  '1001': 400,
+  '1002': 404,
+  '1003': 400,
 };
 
 exports.handle = function (error, res) {
@@ -92,6 +96,16 @@ exports.handleCustomizedError = function (status, message, res) {
   const response = {
     'error': {
       'message': message
+    }
+  };
+  res.status(status).json(response);
+};
+
+exports.handleCustomizedError = function (status, errorCode, message, res) {
+  const response = {
+    'error': {
+      'message': message,
+      'code': errorCode
     }
   };
   res.status(status).json(response);
