@@ -146,7 +146,7 @@ exports.logIn = function (req, res) {
   });
 };
 
-exports.retrieveUserInfo = function (req, res) {
+exports.retrieveMyInfo = function (req, res) {
   console.log('CFH_RetrieveUserInfo');
   const query = new Parse.Query(Parse.User);
   query.include('picture');
@@ -243,6 +243,7 @@ exports.logOut = function (req, res) {
 };
 
 exports.resetPassword = function (req, res) {
+  console.log("CFH_Reset_Password");
   const email = req.body['email'];
   var User = Parse.Object.extend("User");
   const query = new Parse.Query(Parse.User);
@@ -313,6 +314,7 @@ exports.changePassword = function (req, res) {
 }
 
 exports.associateEmail = function (req, res) {
+  console.log("CFH_Associate_Email");
   const user = req.user;
   const email = req.body['email'];
   var User = Parse.Object.extend("User");
@@ -343,6 +345,7 @@ exports.associateEmail = function (req, res) {
 }
 
 exports.changeUsername = function (req, res) {
+  console.log("CFH_Change_Username");
   const user = req.user;
   const username = req.body['new_username'];
   var User = Parse.Object.extend("User");
@@ -375,6 +378,7 @@ exports.changeUsername = function (req, res) {
 
 exports.newRandomUser = function (req, res) {
   // console.log(cryptoUtil.randomString(12));
+  console.log("CFH_New_RandomUser");
   const configQuery = new Parse.Query(KeyValueConfigs);
   var generatedUsername;
   var generatedPassword;
@@ -404,22 +408,28 @@ exports.newRandomUser = function (req, res) {
   }, error => {
     console.error('Error_NewRandomUser_UnableToReadConfig');
     errorHandler.handle(error, res);
-  }).then(newUser => {
-    randomUser = newUser;
-    return pickRandomProfilePic();
+  }).then(newUser => {    
+    if (newUser != undefined) {
+      randomUser = newUser;
+      return pickRandomProfilePic();
+    }
   }, error => {
     console.error('Error_NewRandomUser_UnableToCreateNewUser');
     errorHandler.handle(error, res);
   }).then(profilePic => {
-    generatedNickname = cryptoUtil.randomString(8);
-    randomUser.set('nick_name', generatedNickname);
-    randomUser.set('picture', profilePic);
-    return randomUser.save();
+    if (randomUser != undefined) {
+      generatedNickname = cryptoUtil.randomString(8);
+      randomUser.set('nick_name', generatedNickname);
+      randomUser.set('picture', profilePic);
+      return randomUser.save();
+    }
   }, error => {
     console.error('Error_NewRandomUser_UnableGetDefaultProfilePic');
     errorHandler.handle(error, res);
   }).then(() => {
-    return Parse.User.logIn(generatedUsername, generatedPassword);
+    if (generatedUsername != undefined && generatedPassword != undefined) {
+      return Parse.User.logIn(generatedUsername, generatedPassword);
+    }
   }, error => {
     console.error('Error_NewRandomUser_UnableToSaveNicknameAndProfilePic');
     errorHandler.handle(error, res);

@@ -132,7 +132,9 @@ app.get('/parse/hotCities', cityManager.findAllHotCities);
 app.get('/parse/homepages', homepageManager.getHomePages);
 app.get('/parse/reviews/:id', reviewManager.findReviewById);
 
-app.get('/parse/userInfo', userManager.retrieveUserInfo);
+app.get('/parse/newRandomUser', userManager.newRandomUser);
+app.get('/parse/me', userManager.retrieveMyInfo);
+
 
 //POST
 app.post('/parse/favorites', favoriteManager.addByUserSession);
@@ -147,7 +149,6 @@ app.post('/parse/users/changePassword', userManager.changePassword);
 app.post('/parse/users/resetPassword', userManager.resetPassword);
 app.post('/parse/users/associateEmail', userManager.associateEmail);
 app.post('/parse/users/changeUsername', userManager.changeUsername);
-app.post('/parse/users/newRandomUser', userManager.newRandomUser);
 app.post('/parse/reviews/:id', reviewManager.updateReview);
 app.post('/parse/restaurantCollectionMemCan', selectedCollectionManager.nominateRestaurant);
 app.post('/parse/restaurants/:id', restaurantManager.updateRestaurantById);
