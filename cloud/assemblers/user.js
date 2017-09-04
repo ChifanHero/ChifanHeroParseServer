@@ -8,9 +8,12 @@ exports.assemble = function(source) {
 		user['nick_name'] = source.get('nick_name');
 		user['email'] = source.get('email');
 		user['emailVerified'] = source.get('emailVerified');
+		user['usingDefaultUsername'] = source.get('usingDefaultUsername');
+		user['usingDefaultPassword'] = source.get('usingDefaultPassword');
+		user['usingDefaultNickname'] = source.get('usingDefaultNickname');
 		if (source.get('picture') !== undefined) {
-      user['picture'] = imageAssembler.assemble(source.get('picture')); 
-    }
+      		user['picture'] = imageAssembler.assemble(source.get('picture')); 
+    	}
 	}
 	return user;
 };
