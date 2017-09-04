@@ -16,6 +16,13 @@ const restrictedAcl = new Parse.ACL();
 restrictedAcl.setPublicReadAccess(false);
 restrictedAcl.setPublicWriteAccess(false);
 
+const ERROR_CODE_MAP = {
+  'EMAIL_EXISTING': 1000,
+  'USERNAME_EXISTING': 1001,
+  'NEW_ACCOUNT_NOT_AVAILABLE': 1002,
+  'EMAIL_NOT_FOUND': 1003
+};
+
 exports.oauthLogIn = function (req, res) {
   const oauthLogin = req.body["oauth_login"];
   const accessToken = req.body["access_token"];
@@ -252,9 +259,7 @@ exports.resetPassword = function (req, res) {
   query.find().then(users => {
     const response = {};
     if (users == undefined || users.length == 0) {
-      response['success'] = false;
-      response['error'] = 'EMAIL_NOT_FOUND'
-      res.status(404).json(response);
+      errorHandler.handleCustomizedError(404, ERROR_CODE_MAP['EMAIL_NOT_FOUND'], "Email not found", res);
     } else {
       return Parse.User.requestPasswordReset(email);
     }
@@ -322,10 +327,7 @@ exports.associateEmail = function (req, res) {
   query.equalTo('email', email);
   query.find().then(users => {
     if (users != undefined && users.length > 0) {
-      const response = {};
-      response['success'] = false;
-      response['error'] = 'EMAIL_EXISTING';
-      res.status(400).json(response);
+      errorHandler.handleCustomizedError(400, ERROR_CODE_MAP['EMAIL_EXISTING'], "Email existing", res);
     } else {
       user.set("email", email);
       return user.save();
@@ -353,11 +355,7 @@ exports.changeUsername = function (req, res) {
   query.equalTo('username', username);
   query.find().then(users => {
     if (users != undefined && users.length > 0) {
-      const response = {
-        'success': false,
-        'error' : 'USERNAME_EXISTING'
-      };
-      res.status(400).json(response);
+      errorHandler.handleCustomizedError(400, ERROR_CODE_MAP['USERNAME_EXISTING'], "Username existing", res);
     } else {
       user.set('username', username);
       return user.save();
@@ -399,10 +397,7 @@ exports.newRandomUser = function (req, res) {
         generatedPassword = cryptoUtil.randomString(8);
         return Parse.User.signUp(generatedUsername, generatedPassword);
       } else {
-        const response = {
-          'error': 'NEW_ACCOUNT_NOT_AVAILABLE'
-        };
-        res.status(200).json(response);
+        errorHandler.handleCustomizedError(200, ERROR_CODE_MAP['NEW_ACCOUNT_NOT_AVAILABLE'], "New account not available", res);
       }
     }
   }, error => {
@@ -419,7 +414,10 @@ exports.newRandomUser = function (req, res) {
   }).then(profilePic => {
     if (randomUser != undefined) {
       generatedNickname = cryptoUtil.randomString(8);
+      randomUser.set('usingDefaultUsername', true);
+      randomUser.set('usingDefaultPassword', true);
       randomUser.set('nick_name', generatedNickname);
+      randomUser.set('usingDefaultNickname', true);
       randomUser.set('picture', profilePic);
       return randomUser.save();
     }

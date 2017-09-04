@@ -96,3 +96,13 @@ exports.handleCustomizedError = function (status, message, res) {
   };
   res.status(status).json(response);
 };
+
+exports.handleCustomizedError = function (status, errorCode, message, res) {
+  const response = {
+    'error': {
+      'message': message,
+      'code': errorCode
+    }
+  };
+  res.status(status).json(response);
+};
