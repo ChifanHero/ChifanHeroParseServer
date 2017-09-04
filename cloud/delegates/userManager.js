@@ -215,6 +215,8 @@ exports.update = function (req, res) {
 
   const nickName = req.body['nick_name'];
   const pictureId = req.body['pictureId'];
+  const username = req.body['username'];
+  const email = req.body['email'];
   if (nickName !== undefined) {
     user.set('nick_name', nickName);
   }
@@ -222,6 +224,12 @@ exports.update = function (req, res) {
     const picture = new Image();
     picture.id = pictureId;
     user.set('picture', picture);
+  }
+  if (username != undefined) {
+    user.set('username', username);
+  }
+  if (email != undefined) {
+    user.set('email', email);
   }
   user.save().then(updatedUser => {
     const response = {
@@ -232,7 +240,14 @@ exports.update = function (req, res) {
     res.status(200).json(response);
   }, error => {
     console.error('Error_UpdateUserInfo');
-    errorHandler.handle(error, res);
+    const message = error['message'];
+    if (message == 'USERNAME_EXISTING') {
+      errorHandler.handleCustomizedError(400, ERROR_CODE_MAP['USERNAME_EXISTING'], "Username existing", res);
+    } else if (message == 'EMAIL_EXISTING') {
+      errorHandler.handleCustomizedError(400, ERROR_CODE_MAP['EMAIL_EXISTING'], "Email existing", res);
+    } else {
+      errorHandler.handle(error, res);
+    }
   });
 };
 
@@ -314,62 +329,6 @@ exports.changePassword = function (req, res) {
     });
   }, error => {
     console.error("Error_ChangePassword_RetriveUserInfoFailed");
-    errorHandler.handle(error, res);
-  });
-}
-
-exports.associateEmail = function (req, res) {
-  console.log("CFH_Associate_Email");
-  const user = req.user;
-  const email = req.body['email'];
-  var User = Parse.Object.extend("User");
-  const query = new Parse.Query(Parse.User);
-  query.equalTo('email', email);
-  query.find().then(users => {
-    if (users != undefined && users.length > 0) {
-      errorHandler.handleCustomizedError(400, ERROR_CODE_MAP['EMAIL_EXISTING'], "Email existing", res);
-    } else {
-      user.set("email", email);
-      return user.save();
-    }
-  }, error => {
-    console.error('Error_AssociateEmail_FindUserEmailError');
-    errorHandler.handle(error, res);
-  }).then(() => {
-    const response = {
-      'success': true
-    };
-    res.status(200).json(response);
-  }, error => {
-    console.error('Error_AssociateEmail_UpdateEmailError');
-    errorHandler.handle(error, res);
-  });
-}
-
-exports.changeUsername = function (req, res) {
-  console.log("CFH_Change_Username");
-  const user = req.user;
-  const username = req.body['new_username'];
-  var User = Parse.Object.extend("User");
-  const query = new Parse.Query(Parse.User);
-  query.equalTo('username', username);
-  query.find().then(users => {
-    if (users != undefined && users.length > 0) {
-      errorHandler.handleCustomizedError(400, ERROR_CODE_MAP['USERNAME_EXISTING'], "Username existing", res);
-    } else {
-      user.set('username', username);
-      return user.save();
-    }
-  }, error => {
-    console.error('Error_ChangeUsername_FindUserNameError');
-    errorHandler.handle(error, res);
-  }).then(() => {
-    const response = {
-      'success': true
-    };
-    res.status(200).json(response);
-  }, error => {
-    console.error('Error_ChangeUsername_SaveUsernameError');
     errorHandler.handle(error, res);
   });
 }
