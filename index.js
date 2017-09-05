@@ -134,6 +134,7 @@ app.get('/parse/reviews/:id', reviewManager.findReviewById);
 
 app.get('/parse/newRandomUser', userManager.newRandomUser);
 app.get('/parse/me', userManager.retrieveMyInfo);
+app.get('/parse/me/emailVerified', userManager.emailVerified)
 
 
 //POST
