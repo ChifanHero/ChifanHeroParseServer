@@ -168,6 +168,15 @@ exports.retrieveMyInfo = function (req, res) {
   });
 };
 
+exports.emailVerified = function (req, res) {
+  console.log('CFH_IsEmailVerified');
+  const user = req.user;
+  const response = {
+    'verified': user.get('emailVerified')
+  }
+  res.status(200).json(response);
+}
+
 
 exports.signUp = function (req, res) {
   console.log('CFH_SignUp');
