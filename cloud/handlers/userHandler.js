@@ -16,13 +16,13 @@ Parse.Cloud.beforeSave(Parse.User, function (request, response) {
       return;
     }
     if (userToSave.dirty('password')) {
-      userToSave.set('usingDefaultPassword', false);
+      userToSave.set('using_default_password', false);
     }
     if (userToSave.dirty('username')) {
-      userToSave.set('usingDefaultUsername', false);
+      userToSave.set('using_default_username', false);
     }
     if (userToSave.dirty('nick_name')) {
-      if (!(userToSave.dirty('usingDefaultNickname') && userToSave.get('usingDefaultNickname') == true)) {
+      if (!(userToSave.dirty('using_default_nickname') && userToSave.get('using_default_nickname') == true)) {
         userToSave.set('usingDefaultNickname', false);
       }
     }
