@@ -325,7 +325,7 @@ exports.changePassword = function (req, res) {
       }).then(fetchedUser => {
         const response = {
           'success': true,
-          'new_session_token': fetchedUser.getSessionToken()
+          'session_token': fetchedUser.getSessionToken()
         };
         res.status(200).json(response);
       }, error => {
