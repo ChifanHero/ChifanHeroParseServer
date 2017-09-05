@@ -382,10 +382,10 @@ exports.newRandomUser = function (req, res) {
   }).then(profilePic => {
     if (randomUser != undefined) {
       generatedNickname = cryptoUtil.randomString(8);
-      randomUser.set('usingDefaultUsername', true);
-      randomUser.set('usingDefaultPassword', true);
+      randomUser.set('using_default_username', true);
+      randomUser.set('using_default_password', true);
       randomUser.set('nick_name', generatedNickname);
-      randomUser.set('usingDefaultNickname', true);
+      randomUser.set('using_default_nickname', true);
       randomUser.set('picture', profilePic);
       return randomUser.save();
     }

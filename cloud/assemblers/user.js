@@ -7,10 +7,10 @@ exports.assemble = function(source) {
 		user['username'] = source.get('username');
 		user['nick_name'] = source.get('nick_name');
 		user['email'] = source.get('email');
-		user['emailVerified'] = source.get('emailVerified');
-		user['usingDefaultUsername'] = source.get('usingDefaultUsername');
-		user['usingDefaultPassword'] = source.get('usingDefaultPassword');
-		user['usingDefaultNickname'] = source.get('usingDefaultNickname');
+		user['email_verified'] = source.get('emailVerified');
+		user['using_default_username'] = source.get('usingDefaultUsername');
+		user['using_default_password'] = source.get('usingDefaultPassword');
+		user['using_default_nickname'] = source.get('usingDefaultNickname');
 		if (source.get('picture') !== undefined) {
       		user['picture'] = imageAssembler.assemble(source.get('picture')); 
     	}
