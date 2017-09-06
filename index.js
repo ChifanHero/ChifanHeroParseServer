@@ -50,6 +50,15 @@ const api = new ParseServer({
       // Your API key from mailgun.com
       apiKey: 'key-57edf739c4830a0094f772422e46d5ee',
     }
+  },
+  preventLoginWithUnverifiedEmail: false,
+  emailVerifyTokenValidityDuration: 24 * 60 * 60,
+  revokeSessionOnPasswordReset: true,
+  passwordPolicy: {
+    // a RegExp object or a regex string representing the pattern to enforce 
+    validatorPattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.{8,})/, // enforce password with at least 8 char with at least 1 lower case, 1 upper case and 1 digit
+    //optional setting to set a validity duration for password reset links (in seconds)
+    resetTokenValidityDuration: 24 * 60 * 60, // expire after 24 hours
   }
 });
 
