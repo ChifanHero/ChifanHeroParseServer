@@ -22,7 +22,7 @@ Parse.Cloud.beforeSave(Parse.User, function (request, response) {
       userToSave.set('using_default_username', false);
     }
     if (userToSave.dirty('nick_name')) {
-      if (!(userToSave.dirty('using_default_nickname') && userToSave.get('using_default_nickname') == true)) {
+      if (!(userToSave.dirty('using_default_nickname') && userToSave.get('using_default_nickname') === true)) {
         userToSave.set('usingDefaultNickname', false);
       }
     }
@@ -57,11 +57,11 @@ Parse.Cloud.beforeSave(Parse.User, function (request, response) {
 });
 
 function validate(user) {
-  var promises = [];
-  if (user.dirty('username') && user.get('username') != undefined) {
+  const promises = [];
+  if (user.dirty('username') && user.get('username') !== undefined) {
     promises.push(validateUsername(user.get('username')));
   }
-  if (user.dirty('email') && user.get('email') != undefined) {
+  if (user.dirty('email') && user.get('email') !== undefined) {
     promises.push(validateEmail(user.get('email')));
   }
   return Parse.Promise.when(promises);
@@ -69,34 +69,34 @@ function validate(user) {
 
 function validateUsername(username) {
   const promise = new Parse.Promise();
-  var User = Parse.Object.extend("User");
+  const User = Parse.Object.extend("User");
   const query = new Parse.Query(Parse.User);
   query.equalTo('username', username);
   query.find().then(users => {
-    if (users != undefined && users.length > 0) {
+    if (users !== undefined && users.length > 0) {
       promise.reject('USERNAME_EXISTING');
     } else {
       promise.resolve();
     }
   }, error => {
     promise.reject(error);
-  })
+  });
   return promise;
 }
 
 function validateEmail(email) {
   const promise = new Parse.Promise();
-  var User = Parse.Object.extend("User");
+  const User = Parse.Object.extend("User");
   const query = new Parse.Query(Parse.User);
   query.equalTo('email', email);
   query.find().then(users => {
-    if (users != undefined && users.length > 0) {
+    if (users !== undefined && users.length > 0) {
       promise.reject('EMAIL_EXISTING');
     } else {
       promise.resolve();
     }
   }, error => {
     promise.reject(error);
-  })
+  });
   return promise;
 }

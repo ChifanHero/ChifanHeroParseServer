@@ -136,8 +136,7 @@ exports.logIn = function (req, res) {
     const picture = fetchedUser.get('picture');
     if (picture !== undefined) {
       picture.fetch().then(fetchedPicture => {
-        const picture = imageAssembler.assemble(fetchedPicture);
-        user['picture'] = picture;
+        user['picture'] = imageAssembler.assemble(fetchedPicture);
         response['user'] = user;
         res.status(200).json(response);
       }, error => {
@@ -174,9 +173,9 @@ exports.emailVerified = function (req, res) {
   const user = req.user;
   const response = {
     'verified': user.get('emailVerified')
-  }
+  };
   res.status(200).json(response);
-}
+};
 
 
 exports.signUp = function (req, res) {
@@ -224,7 +223,7 @@ exports.update = function (req, res) {
   const user = req.user;
 
   const nickName = req.body['nick_name'];
-  const pictureId = req.body['pictureId'];
+  const pictureId = req.body['picture_id'];
   const username = req.body['username'];
   const email = req.body['email'];
   if (nickName !== undefined) {
@@ -235,10 +234,10 @@ exports.update = function (req, res) {
     picture.id = pictureId;
     user.set('picture', picture);
   }
-  if (username != undefined) {
+  if (username !== undefined) {
     user.set('username', username);
   }
-  if (email != undefined) {
+  if (email !== undefined) {
     user.set('email', email);
   }
   user.save().then(updatedUser => {
@@ -251,9 +250,9 @@ exports.update = function (req, res) {
   }, error => {
     console.error('Error_UpdateUserInfo');
     const message = error['message'];
-    if (message == 'USERNAME_EXISTING') {
+    if (message === 'USERNAME_EXISTING') {
       errorHandler.handleCustomizedError(400, ERROR_CODE_MAP['USERNAME_EXISTING'], "Username existing", res);
-    } else if (message == 'EMAIL_EXISTING') {
+    } else if (message === 'EMAIL_EXISTING') {
       errorHandler.handleCustomizedError(400, ERROR_CODE_MAP['EMAIL_EXISTING'], "Email existing", res);
     } else {
       errorHandler.handle(error, res);
@@ -277,13 +276,13 @@ exports.logOut = function (req, res) {
 exports.resetPassword = function (req, res) {
   console.log("CFH_Reset_Password");
   const email = req.body['email'];
-  var User = Parse.Object.extend("User");
+  const User = Parse.Object.extend("User");
   const query = new Parse.Query(Parse.User);
   query.equalTo('email', email);
   query.equalTo('emailVerified', true);
   query.find().then(users => {
     const response = {};
-    if (users == undefined || users.length == 0) {
+    if (users === undefined || users.length === 0) {
       errorHandler.handleCustomizedError(404, ERROR_CODE_MAP['EMAIL_NOT_FOUND'], "Email not found", res);
     } else {
       return Parse.User.requestPasswordReset(email);
@@ -305,7 +304,7 @@ exports.resetPassword = function (req, res) {
 exports.changePassword = function (req, res) {
   console.log("CFH_Change_Password");
   const user = req.user;
-  var User = Parse.Object.extend("User");
+  const User = Parse.Object.extend("User");
   const query = new Parse.Query(Parse.User);
   query.get(user.id).then(retrivedUser => {
     const userName = retrivedUser.get('username');
@@ -336,19 +335,19 @@ exports.changePassword = function (req, res) {
     console.error("Error_ChangePassword_RetriveUserInfoFailed");
     errorHandler.handle(error, res);
   });
-}
+};
 
 exports.newRandomUser = function (req, res) {
   // console.log(cryptoUtil.randomString(12));
   console.log("CFH_New_RandomUser");
   const configQuery = new Parse.Query(KeyValueConfigs);
-  var generatedUsername;
-  var generatedPassword;
-  var generatedNickname;
-  var randomUser;
+  let generatedUsername;
+  let generatedPassword;
+  let generatedNickname;
+  let randomUser;
   configQuery.equalTo('key', 'available_temp_users_count');
   configQuery.find().then(configs => {
-    if (configs == undefined || configs.length != 1) {
+    if (configs === undefined || configs.length !== 1) {
       console.error('Error_NewRandomUser_UnableToReadConfig');
       res.status(500).send();
     } else {
@@ -370,7 +369,7 @@ exports.newRandomUser = function (req, res) {
     console.error('Error_NewRandomUser_UnableToReadConfig');
     errorHandler.handle(error, res);
   }).then(newUser => {    
-    if (newUser != undefined) {
+    if (newUser !== undefined) {
       randomUser = newUser;
       return pickRandomProfilePic();
     }
@@ -378,7 +377,7 @@ exports.newRandomUser = function (req, res) {
     console.error('Error_NewRandomUser_UnableToCreateNewUser');
     errorHandler.handle(error, res);
   }).then(profilePic => {
-    if (randomUser != undefined) {
+    if (randomUser !== undefined) {
       generatedNickname = cryptoUtil.randomString(8);
       randomUser.set('using_default_username', true);
       randomUser.set('using_default_password', true);
@@ -391,7 +390,7 @@ exports.newRandomUser = function (req, res) {
     console.error('Error_NewRandomUser_UnableGetDefaultProfilePic');
     errorHandler.handle(error, res);
   }).then(() => {
-    if (generatedUsername != undefined && generatedPassword != undefined) {
+    if (generatedUsername !== undefined && generatedPassword !== undefined) {
       return Parse.User.logIn(generatedUsername, generatedPassword);
     }
   }, error => {
@@ -407,8 +406,7 @@ exports.newRandomUser = function (req, res) {
     const picture = fetchedUser.get('picture');
     if (picture !== undefined) {
       picture.fetch().then(fetchedPicture => {
-        const picture = imageAssembler.assemble(fetchedPicture);
-        user['picture'] = picture;
+        user['picture'] = imageAssembler.assemble(fetchedPicture);
         response['user'] = user;
         res.status(200).json(response);
       }, error => {
@@ -423,7 +421,7 @@ exports.newRandomUser = function (req, res) {
     console.error('Error_NewRandomUser_UnableToSigninNewUser');
     errorHandler.handle(error, res);
   });
-}
+};
 
 function pickRandomProfilePic() {
   const promise = new Parse.Promise();
@@ -432,7 +430,7 @@ function pickRandomProfilePic() {
     // google.client().placeDetail(restaurant.get('google_place_id')).then(restaurantFromGoogle => {
     //   promise.resolve(restaurantFromGoogle);
     // });
-    if (pics == null || pics.length == 0) {
+    if (pics === undefined || pics.length === 0) {
       console.error('Error_NewRandomUser_UnableToPickRandomProfilePic');
       promise.fail('no pic found');
     } else {
