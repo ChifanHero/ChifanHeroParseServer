@@ -9,6 +9,7 @@ const _ = require('underscore');
 const cryptoUtil = require('parse-server/lib/cryptoUtils');
 const KeyValueConfigs = Parse.Object.extend('KeyValueConfigs');
 const DefaultProfilePicture = Parse.Object.extend('DefaultProfilePicture');
+const _crypto = require('crypto');
 
 const TokenStorage = Parse.Object.extend('TokenStorage');
 
@@ -309,30 +310,25 @@ exports.changePassword = function (req, res) {
     const userName = retrivedUser.get('username');
     const oldPassword = req.body['old_password'];
     const newPassword = req.body['new_password'];
-    Parse.User.logOut().then(() => {
-      Parse.User.logIn(userName, oldPassword).then(fetchedUser => {
-        fetchedUser.set("password", newPassword);
-        return fetchedUser.save();
-      }, error => {
-        console.error("Error_ChangePassword_LogInWithOldPasswordFailed");
-        errorHandler.handle(error, res);
-      }).then(() => {
-        return Parse.User.logIn(userName, newPassword);
-      }, error => {
-        console.error("Error_ChangePassword_SavePasswordFailed");
-        errorHandler.handle(error, res);
-      }).then(fetchedUser => {
-        const response = {
-          'success': true,
-          'session_token': fetchedUser.getSessionToken()
-        };
-        res.status(200).json(response);
-      }, error => {
-        console.error("Error_ChangePassword_LoginWithNewPasswordFailed");
-        errorHandler.handle(error, res);
-      });
+    Parse.User.logIn(userName, oldPassword).then(fetchedUser => {
+      fetchedUser.set("password", newPassword);
+      return fetchedUser.save();
     }, error => {
-      console.error("Error_ChangePassword_LogOutFailed");
+      console.error("Error_ChangePassword_LogInWithOldPasswordFailed");
+      errorHandler.handle(error, res);
+    }).then(() => {
+      return Parse.User.logIn(userName, newPassword);
+    }, error => {
+      console.error("Error_ChangePassword_SavePasswordFailed");
+      errorHandler.handle(error, res);
+    }).then(fetchedUser => {
+      const response = {
+        'success': true,
+        'session_token': fetchedUser.getSessionToken()
+      };
+      res.status(200).json(response);
+    }, error => {
+      console.error("Error_ChangePassword_LoginWithNewPasswordFailed");
       errorHandler.handle(error, res);
     });
   }, error => {
@@ -361,7 +357,9 @@ exports.newRandomUser = function (req, res) {
         config.increment('numberValue', -1);
         config.save();
         generatedUsername = cryptoUtil.randomString(12);
-        generatedPassword = cryptoUtil.randomString(8);
+        generatedPassword = generateRandomPassword(8);
+        console.log(generatedPassword);
+        console.log("password is ".concat(generatedPassword));
         return Parse.User.signUp(generatedUsername, generatedPassword);
       } else {
         errorHandler.handleCustomizedError(200, ERROR_CODE_MAP['NEW_ACCOUNT_NOT_AVAILABLE'], "New account not available", res);
@@ -445,4 +443,41 @@ function pickRandomProfilePic() {
     promise.fail(error);
   });
   return promise;
+}
+
+function generateRandomPassword(passwordLength) {
+  console.log("generating password");
+  if (passwordLength < 8) {
+    throw new Error('Password must be 8 characters long.');
+  }
+  const upperCase = randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+  const lowerCase = randomString(1, 'abcdefghijklmnopqrstuvwxyz');
+  const number = randomString(1, '0123456789');
+  const rest = randomString(passwordLength - 3, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789');
+  return shuffle(upperCase.concat(lowerCase).concat(number).concat(rest));
+}
+
+function shuffle(password) {
+  console.log(password);
+  let a = password.split("");
+  const n = a.length;
+  for(let i = n - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1));
+      let tmp = a[i];
+      a[i] = a[j];
+      a[j] = tmp;
+  }
+  return a.join("");
+}
+
+function randomString(size, charBase) {
+  if (size === 0) {
+    throw new Error('Zero-length randomString is useless.');
+  }
+  let objectId = '';
+  const bytes = (0, _crypto.randomBytes)(size);
+  for (var i = 0; i < bytes.length; ++i) {
+    objectId += charBase[bytes.readUInt8(i) % charBase.length];
+  }
+  return objectId;
 }
