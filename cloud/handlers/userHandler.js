@@ -62,7 +62,7 @@ function validate(user) {
     promises.push(validateUsername(user.get('username')));
   }
   if (user.dirty('email') && user.get('email') !== undefined) {
-    promises.push(validateEmail(user.get('email')));
+    promises.push(validateEmail(user.get('email'), user));
   }
   return Parse.Promise.when(promises);
 }
@@ -84,14 +84,20 @@ function validateUsername(username) {
   return promise;
 }
 
-function validateEmail(email) {
+function validateEmail(email, user) {
   const promise = new Parse.Promise();
   const User = Parse.Object.extend("User");
   const query = new Parse.Query(Parse.User);
   query.equalTo('email', email);
   query.find().then(users => {
-    if (users !== undefined && users.length > 0) {
+    if (users !== undefined && users.length > 1) {
       promise.reject('EMAIL_EXISTING');
+    } else if (users !== undefined && users.length === 1) {
+      if (users[0].id === user.id) {
+        promise.resolve();
+      } else {
+        promise.reject('EMAIL_EXISTING');
+      }
     } else {
       promise.resolve();
     }
