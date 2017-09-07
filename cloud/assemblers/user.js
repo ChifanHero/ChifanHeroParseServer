@@ -2,7 +2,6 @@ const imageAssembler = require('./image');
 
 exports.assemble = function(source) {
   	const user = {};
-  	console.log(source);
 	if (source !== undefined) {
 		user['id'] = source.id;
 		user['username'] = source.get('username');

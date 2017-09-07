@@ -158,7 +158,6 @@ exports.retrieveMyInfo = function (req, res) {
   const query = new Parse.Query(Parse.User);
   query.include('picture');
   query.get(req.user.id).then(retrivedUser => {
-    console.log(retrivedUser);
     const assembledUser = userAssembler.assemble(retrivedUser);
     const response = {
       'user': assembledUser
