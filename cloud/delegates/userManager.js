@@ -160,7 +160,7 @@ exports.retrieveMyInfo = function (req, res) {
   query.get(req.user.id).then(user => {
     const assembledUser = userAssembler.assemble(user);
     const response = {
-      'result': assembledUser
+      'user': assembledUser
     };
     res.status(200).json(response);
   }, error => {
