@@ -249,11 +249,8 @@ function findReviewWrittenByCurrentUser(id, user) {
   restaurant.id = id;
   reviewQuery.equalTo('restaurant', restaurant);
   reviewQuery.equalTo('user', user);
-  reviewQuery.find().then(reviews => {
-    if (reviews.length > 1) {
-      promise.resolve();
-    } else if (reviews.length === 1) {
-      const review = reviews[0];
+  reviewQuery.first().then(review => {
+    if (review !== undefined) {
       const imageQuery = new Parse.Query(Image);
       imageQuery.equalTo('review', review);
       imageQuery.find().then(photos => {

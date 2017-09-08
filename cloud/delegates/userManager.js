@@ -251,9 +251,9 @@ exports.update = function (req, res) {
     console.error('Error_UpdateUserInfo');
     const message = error['message'];
     if (message === 'USERNAME_EXISTING') {
-      errorHandler.handleCustomizedError(400, ERROR_CODE_MAP['USERNAME_EXISTING'], "Username existing", res);
+      errorHandler.handleCustomizedError(400, "Username existing", res, ERROR_CODE_MAP['USERNAME_EXISTING']);
     } else if (message === 'EMAIL_EXISTING') {
-      errorHandler.handleCustomizedError(400, ERROR_CODE_MAP['EMAIL_EXISTING'], "Email existing", res);
+      errorHandler.handleCustomizedError(400, "Email existing", res, ERROR_CODE_MAP['EMAIL_EXISTING']);
     } else {
       errorHandler.handle(error, res);
     }
@@ -283,7 +283,7 @@ exports.resetPassword = function (req, res) {
   query.find().then(users => {
     const response = {};
     if (users === undefined || users.length === 0) {
-      errorHandler.handleCustomizedError(404, ERROR_CODE_MAP['EMAIL_NOT_FOUND'], "Email not found", res);
+      errorHandler.handleCustomizedError(404, "Email not found", res, ERROR_CODE_MAP['EMAIL_NOT_FOUND']);
     } else {
       return Parse.User.requestPasswordReset(email);
     }
@@ -362,7 +362,7 @@ exports.newRandomUser = function (req, res) {
         console.log("password is ".concat(generatedPassword));
         return Parse.User.signUp(generatedUsername, generatedPassword);
       } else {
-        errorHandler.handleCustomizedError(200, ERROR_CODE_MAP['NEW_ACCOUNT_NOT_AVAILABLE'], "New account not available", res);
+        errorHandler.handleCustomizedError(200, "New account not available", res, ERROR_CODE_MAP['NEW_ACCOUNT_NOT_AVAILABLE']);
       }
     }
   }, error => {
