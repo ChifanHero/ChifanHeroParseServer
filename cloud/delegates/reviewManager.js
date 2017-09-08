@@ -139,39 +139,3 @@ exports.findReviewById = function (req, res) {
     errorHandler.handle(error, res);
   });
 };
-
-exports.findReviewByRestaurantIdAndUserSession = function (req, res) {
-  console.log('CFH_GetReviewByRestaurantIdAndUserSession');
-  const restaurantId = req.params.id;
-  const user = req.user;
-  if (user === undefined) {
-    errorHandler.handleCustomizedError(400, "User session token is required", res);
-    return;
-  }
-  
-  const reviewQuery = new Parse.Query(Review);
-  reviewQuery.include('user');
-  reviewQuery.include('user.picture');
-  const restaurant = new Restaurant();
-  restaurant.id = restaurantId;
-  reviewQuery.equalTo('restaurant', restaurant);
-  reviewQuery.equalTo('user', user);
-  reviewQuery.find().then(reviews => {
-    if (reviews.length > 1) {
-      console.error('Error_User(' + user.id + ') has multiple reviews for a restaurant(' + restaurantId + ')');
-      errorHandler.handleCustomizedError(500, 'User should not have multiple reviews for one restaurant', res);
-    } else if (reviews.length === 1) {
-      const review = reviews[0];
-      const imageQuery = new Parse.Query(Image);
-      imageQuery.equalTo('review', review);
-      imageQuery.find().then(photos => {
-        const result = reviewAssembler.assemble(review, photos);
-        const response = {};
-        response['result'] = result;
-        res.status(200).json(response);
-      });
-    } else {
-      res.status(404).json({});
-    }
-  });
-};
