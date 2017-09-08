@@ -38,7 +38,8 @@ exports.findRestaurantById = function (req, res) {
   const p4 = findPhotosByRestaurantId(id);
   const p5 = findGoogleRestaurantById(id);
   const p6 = checkIfCurrentUserFavorite(id, currentUser);
-  Parse.Promise.when(p1, p2, p3, p4, p5, p6).then((restaurant, recommendedDishes, reviews, photos, restaurantFromGoogle, isCurrentUserFavorite) => {
+  const p7 = findReviewWrittenByCurrentUser(id, currentUser);
+  Parse.Promise.when(p1, p2, p3, p4, p5, p6, p7).then((restaurant, recommendedDishes, reviews, photos, restaurantFromGoogle, isCurrentUserFavorite, reviewWrittenByCurrentUser) => {
     const restaurantRes = restaurantAssembler.assemble(restaurant);
     restaurantRes['review_info'] = {
       "total_count": 0,
@@ -118,6 +119,9 @@ exports.findRestaurantById = function (req, res) {
     }
     if (isCurrentUserFavorite !== undefined) {
       restaurantRes['current_user_favorite'] = isCurrentUserFavorite;
+    }
+    if (reviewWrittenByCurrentUser !== undefined) {
+      restaurantRes['current_user_review'] = reviewWrittenByCurrentUser;
     }
     const response = {
       'result': restaurantRes
@@ -230,6 +234,39 @@ function checkIfCurrentUserFavorite(id, user) {
   });
   return promise;
 }
+
+function findReviewWrittenByCurrentUser(id, user) {
+  const promise = new Parse.Promise();
+  if (user === undefined) {
+    promise.resolve();
+    return promise;
+  }
+
+  const reviewQuery = new Parse.Query(Review);
+  reviewQuery.include('user');
+  reviewQuery.include('user.picture');
+  const restaurant = new Restaurant();
+  restaurant.id = id;
+  reviewQuery.equalTo('restaurant', restaurant);
+  reviewQuery.equalTo('user', user);
+  reviewQuery.find().then(reviews => {
+    if (reviews.length > 1) {
+      promise.resolve();
+    } else if (reviews.length === 1) {
+      const review = reviews[0];
+      const imageQuery = new Parse.Query(Image);
+      imageQuery.equalTo('review', review);
+      imageQuery.find().then(photos => {
+        const result = reviewAssembler.assemble(review, photos);
+        promise.resolve(result);
+      });
+    } else {
+      promise.resolve();
+    }
+  });
+  return promise;
+}
+
 
 /**
  * Update restaurant by Id. We only update restaurant name for now.

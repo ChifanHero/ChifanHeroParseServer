@@ -125,7 +125,6 @@ app.get('/home', function (req, res) {
 app.get('/parse/restaurants/:id', restaurantManager.findRestaurantById);
 //app.get('/parse/restaurants/:id/images', imageManager.findAllImagesOfOneRestaurant);
 app.get('/parse/restaurants/:id/reviews', reviewManager.findAllReviewsOfOneRestaurant);
-app.get('/parse/restaurants/:id/reviewsOfOneUser', reviewManager.findReviewByRestaurantIdAndUserSession);
 app.get('/parse/restaurants/:id/recommendedDishes', recommendedDishManager.findAllRecommendedDishesOfOneRestaurant);
 
 app.get('/parse/favorites', favoriteManager.findAllFavoritesByUserSession);
