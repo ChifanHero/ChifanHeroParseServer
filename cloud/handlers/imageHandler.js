@@ -79,7 +79,9 @@ Parse.Cloud.beforeSave('Image', function (request, response) {
         }
       });
     });
+    return;
   }
+  response.success();
 });
 
 
