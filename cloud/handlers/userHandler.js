@@ -28,10 +28,11 @@ Parse.Cloud.beforeSave(Parse.User, function (request, response) {
     }
     if (userToSave.dirty('picture')) {
       const oldUserQuery = new Parse.Query(Parse.User);
+      oldUserQuery.include('picture');
       oldUserQuery.get(userToSave.id).then(oldUser => {
         if (oldUser !== undefined) {
           const picture = oldUser.get("picture");
-          if (picture !== undefined) {
+          if (picture !== undefined && picture.get('type') !== 'DefaultProfile') {
             picture.destroy().then(() => {
               response.success();
             }, error => {
