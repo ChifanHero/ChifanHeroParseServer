@@ -92,16 +92,7 @@ exports.handle = function (error, res) {
   res.status(status).json(response);
 };
 
-exports.handleCustomizedError = function (status, message, res) {
-  const response = {
-    'error': {
-      'message': message
-    }
-  };
-  res.status(status).json(response);
-};
-
-exports.handleCustomizedError = function (status, errorCode, message, res) {
+exports.handleCustomizedError = function (status, message, res, errorCode) {
   const response = {
     'error': {
       'message': message,

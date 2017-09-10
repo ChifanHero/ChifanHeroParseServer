@@ -125,7 +125,6 @@ app.get('/home', function (req, res) {
 app.get('/parse/restaurants/:id', restaurantManager.findRestaurantById);
 //app.get('/parse/restaurants/:id/images', imageManager.findAllImagesOfOneRestaurant);
 app.get('/parse/restaurants/:id/reviews', reviewManager.findAllReviewsOfOneRestaurant);
-app.get('/parse/restaurants/:id/reviewsOfOneUser', reviewManager.findReviewByRestaurantIdAndUserSession);
 app.get('/parse/restaurants/:id/recommendedDishes', recommendedDishManager.findAllRecommendedDishesOfOneRestaurant);
 
 app.get('/parse/favorites', favoriteManager.findAllFavoritesByUserSession);
@@ -157,10 +156,10 @@ app.post('/parse/users/update', userManager.update);
 app.post('/parse/users/logOut', userManager.logOut);
 app.post('/parse/users/changePassword', userManager.changePassword);
 app.post('/parse/users/resetPassword', userManager.resetPassword);
-app.post('/parse/reviews/:id', reviewManager.updateReview);
 app.post('/parse/restaurantCollectionMemCan', selectedCollectionManager.nominateRestaurant);
 app.post('/parse/restaurants/:id', restaurantManager.updateRestaurantById);
-app.post('/parse/restaurants/:id/reviews', reviewManager.createReview);
+app.post('/parse/restaurants/:restaurantId/reviews', reviewManager.upsertReview);
+app.post('/parse/restaurants/:restaurantId/reviews/:reviewId', reviewManager.upsertReview);
 app.post('/parse/restaurants/:id/recommendedDishes', recommendedDishManager.upsertRecommendedDish);
 
 //DELETE
