@@ -21,7 +21,8 @@ const ERROR_CODE_MAP = {
   'EMAIL_EXISTING': 1000,
   'USERNAME_EXISTING': 1001,
   'NEW_ACCOUNT_NOT_AVAILABLE': 1002,
-  'EMAIL_NOT_FOUND': 1003
+  'EMAIL_NOT_FOUND': 1003,
+  'INVALID_LOGIN_CREDENTIAL': 101
 };
 
 exports.oauthLogIn = function (req, res) {
@@ -126,8 +127,37 @@ const newOauthUser = function (accessToken, oauthLogin) {
 exports.logIn = function (req, res) {
   console.log('CFH_LogIn');
   const username = req.body['username'];
-  const encodedPassword = req.body['password'];
-  Parse.User.logIn(username, encodedPassword).then(fetchedUser => {
+  const email = req.body['email'];
+  const password = req.body['password'];
+  if (username !== undefined) {
+    loginWithUsernamePassword(username, password, res);
+  } else if (email !== undefined) {
+    const query = new Parse.Query(Parse.User);
+    query.equalTo('email', email);
+    query.equalTo('emailVerified', true);
+    query.find().then(users => {
+      if (users === undefined || users.length === 0) {
+        errorHandler.handleCustomizedError(404, ERROR_CODE_MAP['INVALID_LOGIN_CREDENTIAL'], "Invalid login credential", res);
+      } else if (users.length > 1) {
+        // This should not happen
+        res.status(500).json({});
+      } else {
+        const user = users[0];
+        const retrievedUsername = user.get('username');
+        loginWithUsernamePassword(retrievedUsername, password, res);
+      }
+    }, error => {
+      console.error('Error_LogIn');
+      errorHandler.handle(error, res);
+    });
+  } else {
+
+  }
+  
+};
+
+function loginWithUsernamePassword(username, password, res) {
+  Parse.User.logIn(username, password).then(fetchedUser => {
     const response = {
       'success': true,
       'session_token': fetchedUser.getSessionToken()
@@ -151,7 +181,7 @@ exports.logIn = function (req, res) {
     console.error('Error_LogIn');
     errorHandler.handle(error, res);
   });
-};
+}
 
 exports.retrieveMyInfo = function (req, res) {
   console.log('CFH_RetrieveUserInfo');
@@ -178,6 +208,7 @@ exports.emailVerified = function (req, res) {
 };
 
 
+// This needs to be retouched before open sign up to users
 exports.signUp = function (req, res) {
   console.log('CFH_SignUp');
   const username = req.body['username'];
