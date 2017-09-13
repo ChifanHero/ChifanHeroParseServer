@@ -15,6 +15,7 @@ const homepageManager = require('./cloud/delegates/homepageManager');
 const reviewManager = require('./cloud/delegates/reviewManager');
 const userActivityManager = require('./cloud/delegates/userActivityManager');
 const recommendedDishManager = require('./cloud/delegates/recommendedDishManager');
+const errorHandler = require('./cloud/errorHandler');
 
 const devEnv = {
   //dbURI: "mongodb://aws:aws@ds015780.mlab.com:15780/lightning-staging",
@@ -93,7 +94,7 @@ app.use(mountPath, function (req, res, next) {
       req.user = user;
       next();
     }, error => {
-      res.status(401).json(error);
+      errorHandler.handle(error, res);
     });
   }
 
