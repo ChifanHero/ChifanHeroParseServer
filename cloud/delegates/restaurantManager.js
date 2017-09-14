@@ -32,6 +32,11 @@ exports.findRestaurantById = function (req, res) {
   if (req.query.lat !== undefined) {
     latitude = parseFloat(req.query.lat);
   }
+  let timeZoneToUTC = undefined;
+  if (req.query.timeZone !== undefined) {
+    timeZoneToUTC = parseInt(req.query.timeZone);
+  }
+  
   const p1 = findRestaurantById(id);
   const p2 = findRecommendedDishesByRestaurantId(id);
   const p3 = findReviewsByRestaurantId(id);
@@ -80,10 +85,9 @@ exports.findRestaurantById = function (req, res) {
         if (restaurantFromGoogle.result.opening_hours.open_now !== undefined) {
           restaurantRes['open_now'] = restaurantFromGoogle.result.opening_hours.open_now;
         }
-        // AWS is using UTC time, convert UTC to PST
-        // TODO: only works in PST time, need user local time
+        // AWS is using UTC time, convert UTC to user local time
         let day = new Date().getDay();
-        if (new Date().getHours() - 7 < 0) {
+        if (new Date().getHours() + timeZoneToUTC < 0) {
           day += 6;
         }
         restaurantRes['open_time_today'] = restaurantFromGoogle.result.opening_hours.weekday_text[(day + 6) % 7];
