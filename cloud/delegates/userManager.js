@@ -137,9 +137,10 @@ exports.logIn = function (req, res) {
     query.equalTo('emailVerified', true);
     query.find().then(users => {
       if (users === undefined || users.length === 0) {
-        errorHandler.handleCustomizedError(404, ERROR_CODE_MAP['INVALID_LOGIN_CREDENTIAL'], "Invalid login credential", res);
+        errorHandler.handleCustomizedError(404, "Invalid login credential", res, ERROR_CODE_MAP['INVALID_LOGIN_CREDENTIAL']);
       } else if (users.length > 1) {
         // This should not happen
+        errorHandler.handleCustomizedError(500, "Find multiple users with same email", res);
         res.status(500).json({});
       } else {
         const user = users[0];
