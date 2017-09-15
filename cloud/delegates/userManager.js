@@ -281,10 +281,10 @@ exports.update = function (req, res) {
     res.status(200).json(response);
   }, error => {
     console.error('Error_UpdateUserInfo');
-    const message = error['message'];
-    if (message === 'USERNAME_EXISTING') {
+    const messages = error['message'];
+    if (messages !== undefined && messages.length > 0 && messages[0] === 'USERNAME_EXISTING') {
       errorHandler.handleCustomizedError(400, "Username existing", res, ERROR_CODE_MAP['USERNAME_EXISTING']);
-    } else if (message === 'EMAIL_EXISTING') {
+    } else if (messages !== undefined && messages.length > 0 && messages[0] === 'EMAIL_EXISTING') {
       errorHandler.handleCustomizedError(400, "Email existing", res, ERROR_CODE_MAP['EMAIL_EXISTING']);
     } else {
       errorHandler.handle(error, res);
