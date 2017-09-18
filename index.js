@@ -17,6 +17,10 @@ const userActivityManager = require('./cloud/delegates/userActivityManager');
 const recommendedDishManager = require('./cloud/delegates/recommendedDishManager');
 const errorHandler = require('./cloud/errorHandler');
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+const ParseRestApi = require('./cloud/rest/ParseRestApi');
+var _ParseRestApi = _interopRequireDefault(ParseRestApi);
+
 const devEnv = {
   //dbURI: "mongodb://aws:aws@ds015780.mlab.com:15780/lightning-staging",
   dbURI: "mongodb://readwrite:readwrite@ec2-34-212-245-174.us-west-2.compute.amazonaws.com:27017/chifanhero?authSource=admin",
@@ -90,7 +94,8 @@ app.use(mountPath, function (req, res, next) {
   if (sessionToken === undefined) {
     next();
   } else {
-    Parse.User.become(sessionToken).then(user => {
+    const restApi = new _ParseRestApi.default(req.auth.config.publicServerURL, req.auth.config.applicationId);
+    restApi.retriveUserFromSession(sessionToken).then(user => {
       req.user = user;
       next();
     }, error => {
