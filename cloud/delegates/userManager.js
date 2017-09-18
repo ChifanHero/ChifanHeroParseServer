@@ -1,7 +1,5 @@
 'use strict';
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 const Image = Parse.Object.extend('Image');
 const userAssembler = require('../assemblers/user');
 const restUserAssembler = require('../assemblers/restUser');
@@ -16,7 +14,6 @@ const _crypto = require('crypto');
 
 const TokenStorage = Parse.Object.extend('TokenStorage');
 const ParseRestApi = require('../rest/ParseRestApi');
-var _ParseRestApi = _interopRequireDefault(ParseRestApi);
 
 const restrictedAcl = new Parse.ACL();
 restrictedAcl.setPublicReadAccess(false);
@@ -137,7 +134,7 @@ exports.logIn = function (req, res) {
   const username = req.body['username'];
   const email = req.body['email'];
   const password = req.body['password'];
-  const restApi = new _ParseRestApi.default(req.auth.config.publicServerURL, req.auth.config.applicationId);
+  const restApi = new ParseRestApi(req.auth.config.publicServerURL, req.auth.config.applicationId);
   if (username !== undefined) {
     loginWithUsernamePassword(restApi, username, password, res);
   } else if (email !== undefined) {
@@ -172,8 +169,7 @@ function loginWithUsernamePassword(restApi, username, password, res) {
       'success': true,
       'session_token': fetchedUser['sessionToken']
     };
-    const user = restUserAssembler.assemble(fetchedUser);
-    response['user'] = user;
+    response['user'] = restUserAssembler.assemble(fetchedUser);
     res.status(200).json(response);
   }, error => {
     console.error('Error_LogIn');
@@ -183,7 +179,7 @@ function loginWithUsernamePassword(restApi, username, password, res) {
 
 exports.retrieveMyInfo = function (req, res) {
   console.log('CFH_RetrieveUserInfo');
-  const restApi = new _ParseRestApi.default(req.auth.config.publicServerURL, req.auth.config.applicationId);
+  const restApi = new ParseRestApi(req.auth.config.publicServerURL, req.auth.config.applicationId);
   const include = {'include': 'picture'};
   restApi.getUser(req.user['objectId'], req.user['sessionToken'], include).then(retrivedUser => {
     const assembledUser = restUserAssembler.assemble(retrivedUser);
@@ -251,7 +247,7 @@ exports.update = function (req, res) {
   //If session token is invalid, Parse will handle that
   //We don't need to verify session token
 
-  const restApi = new _ParseRestApi.default(req.auth.config.publicServerURL, req.auth.config.applicationId);
+  const restApi = new ParseRestApi(req.auth.config.publicServerURL, req.auth.config.applicationId);
   const user = {
     'objectId': req.user['objectId']
   };
@@ -263,12 +259,11 @@ exports.update = function (req, res) {
     user['nick_name'] = nickName;
   }
   if (pictureId !== undefined) {
-    const picPointer = {
+    user['picture'] = {
       __type: 'Pointer',
       className: 'Image',
       objectId: pictureId
     };
-    user['picture'] = picPointer;
   }
   if (username !== undefined) {
     user['username'] = username;
@@ -297,7 +292,7 @@ exports.update = function (req, res) {
 exports.logOut = function (req, res) {
   console.log('CFH_LogOut');
   //User-Session is required in HTTP header
-  const restApi = new _ParseRestApi.default(req.auth.config.publicServerURL, req.auth.config.applicationId);
+  const restApi = new ParseRestApi(req.auth.config.publicServerURL, req.auth.config.applicationId);
   restApi.logOut(req.user['sessionToken']).then(success => {
     const response = {};
     response['success'] = success;
@@ -338,13 +333,13 @@ exports.resetPassword = function (req, res) {
 
 exports.changePassword = function (req, res) {
   console.log("CFH_Change_Password");
-  const restApi = new _ParseRestApi.default(req.auth.config.publicServerURL, req.auth.config.applicationId);
+  const restApi = new ParseRestApi(req.auth.config.publicServerURL, req.auth.config.applicationId);
   restApi.logIn(req.user['username'], req.body['old_password']).then(loggedInUser => {
     // veried old password is correct, now go ahead change the password
     const user = {
       'objectId': req.user['objectId'],
       'password': req.body['new_password']
-    }
+    };
     return restApi.updateUser(user, req.user['sessionToken']);
   }, error => {
     console.error("Error_ChangePassword_LogInWithOldPasswordFailed");
@@ -387,7 +382,7 @@ exports.newRandomUser = function (req, res) {
         config.save();
         generatedUsername = cryptoUtil.randomString(12);
         generatedPassword = generateRandomPassword(8);
-        return new _ParseRestApi.default(req.auth.config.publicServerURL, req.auth.config.applicationId).signUp(generatedUsername, generatedPassword);
+        return new ParseRestApi(req.auth.config.publicServerURL, req.auth.config.applicationId).signUp(generatedUsername, generatedPassword);
       } else {
         errorHandler.handleCustomizedError(200, "New account not available", res, ERROR_CODE_MAP['NEW_ACCOUNT_NOT_AVAILABLE']);
       }
@@ -418,7 +413,7 @@ exports.newRandomUser = function (req, res) {
       userToUpdate['using_default_nickname'] = true;
       userToUpdate['picture'] = picPointer;
       userToUpdate['objectId'] = randomUser['objectId'];
-      return new _ParseRestApi.default(req.auth.config.publicServerURL, req.auth.config.applicationId).updateUser(userToUpdate, randomUser['sessionToken']);
+      return new ParseRestApi(req.auth.config.publicServerURL, req.auth.config.applicationId).updateUser(userToUpdate, randomUser['sessionToken']);
     }
   }, error => {
     console.error('Error_NewRandomUser_UnableGetDefaultProfilePic');
@@ -428,11 +423,10 @@ exports.newRandomUser = function (req, res) {
       'success': true,
       'session_token': randomUser['sessionToken']
     };
-    const user = {
+    response['user'] = {
       'username': generatedUsername,
       'password': generatedPassword
     };
-    response['user'] = user;
     res.status(200).json(response);
   }, error => {
     console.error('Error_NewRandomUser_UnableToSaveNicknameAndProfilePic');
@@ -491,7 +485,7 @@ function randomString(size, charBase) {
   }
   let objectId = '';
   const bytes = (0, _crypto.randomBytes)(size);
-  for (var i = 0; i < bytes.length; ++i) {
+  for (let i = 0; i < bytes.length; ++i) {
     objectId += charBase[bytes.readUInt8(i) % charBase.length];
   }
   return objectId;
