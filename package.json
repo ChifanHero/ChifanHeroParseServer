@@ -11,8 +11,8 @@
   "dependencies": {
     "express": "~4.11.x",
     "kerberos": "~0.0.x",
-    "parse": "~1.8.0",
-    "parse-server": "~2.2.2",
+    "parse": "~1.10.0",
+    "parse-server": "~2.6.1",
     "underscore": "latest",
     "parse-dashboard": "latest",
     "sharp": "latest"
