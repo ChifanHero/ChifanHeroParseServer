@@ -10,21 +10,30 @@ const reviewAssembler = require('../assemblers/review');
 
 exports.upsertReview = function (req, res) {
   console.log('CFH_UpsertReview');
-  const user = req.user;
-  if (user === undefined) {
+  if (req.user === undefined) {
     errorHandler.handleCustomizedError(400, "User session token is required", res);
     return;
   }
+  if (req.user['objectId'] === undefined) {
+    errorHandler.handleCustomizedError(500, "User objectId is undefined", res);
+    return;
+  }
+  const user = {
+    __type: 'Pointer',
+    className: '_User',
+    objectId: req.user['objectId']
+  };
+
   const rating = req.body['rating'];
   const content = req.body['content'];
   const restaurantId = req.params.restaurantId;
   const reviewId = req.params.reviewId;
-  
+
   if (rating === undefined) {
     errorHandler.handleCustomizedError(400, "Rating is required", res);
     return;
   }
-  
+
   const query = new Parse.Query(Review);
   if (reviewId !== undefined) {
     query.get(reviewId).then(review => {
@@ -68,7 +77,7 @@ exports.upsertReview = function (req, res) {
         }
         review.set('restaurant', restaurant);
         review.set('user', user);
-        
+
         review.save().then(savedReview => {
           const response = {};
           response['result'] = reviewAssembler.assemble(savedReview);
@@ -87,7 +96,7 @@ exports.findAllReviewsOfOneRestaurant = function (req, res) {
   const restaurantId = req.params.id;
   const skip = req.query["skip"];
   const limit = req.query["limit"];
-  
+
   const reviewQuery = new Parse.Query(Review);
   const restaurant = new Restaurant();
   restaurant.id = restaurantId;
@@ -120,18 +129,18 @@ exports.findReviewById = function (req, res) {
   console.log('CFH_GetReview');
   const id = req.params.id;
   const reviewQuery = new Parse.Query(Review);
-  
+
   reviewQuery.include('user');
   reviewQuery.include('user.picture');
   reviewQuery.include('restaurant');
   const p1 = reviewQuery.get(id);
-  
+
   const imageQuery = new Parse.Query(Image);
   const review = new Review();
   review.id = id;
   imageQuery.equalTo('review', review);
   const p2 = imageQuery.find();
-  
+
   Parse.Promise.when(p1, p2).then((review, photos) => {
     if (review !== undefined) {
       const result = reviewAssembler.assemble(review, photos);

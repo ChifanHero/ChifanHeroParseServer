@@ -28,7 +28,6 @@ exports.findAllRecommendedDishesOfOneRestaurant = function(req, res) {
 
 exports.upsertRecommendedDish = function (req, res) {
   console.log('CFH_UpsertRecommendedDish');
-  const user = req.user;
   const dishName = req.body['name'];
   const restaurantId = req.params.id;
   const restaurant = new Restaurant();
