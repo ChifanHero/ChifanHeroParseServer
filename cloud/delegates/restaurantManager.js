@@ -32,7 +32,7 @@ exports.findRestaurantById = function (req, res) {
   if (req.query.lat !== undefined) {
     latitude = parseFloat(req.query.lat);
   }
-  let timeZoneToUTC = undefined;
+  let timeZoneToUTC = -7;
   if (req.query.timeZone !== undefined) {
     timeZoneToUTC = parseInt(req.query.timeZone);
   }
