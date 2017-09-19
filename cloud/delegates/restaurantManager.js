@@ -23,7 +23,14 @@ const google = require('../util/googlePlace.js');
 exports.findRestaurantById = function (req, res) {
   console.log('CFH_GetRestaurant');
   const id = req.params.id;
-  const currentUser = req.user;
+  let currentUser = undefined;
+  if (req.user !== undefined && req.user['objectId'] !== undefined) {
+    currentUser = {
+      __type: 'Pointer',
+      className: '_User',
+      objectId: req.user['objectId']
+    }
+  }
   let longitude = undefined;
   let latitude = undefined;
   if (req.query.lon !== undefined) {
