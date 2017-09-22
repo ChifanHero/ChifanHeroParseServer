@@ -179,6 +179,10 @@ function loginWithUsernamePassword(restApi, username, password, res) {
 
 exports.retrieveMyInfo = function (req, res) {
   console.log('CFH_RetrieveUserInfo');
+  if (req.user === undefined) {
+    errorHandler.handle(new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "invalid session token"), res);
+    return;
+  }
   const restApi = new ParseRestApi(req.auth.config.publicServerURL, req.auth.config.applicationId);
   const include = {'include': 'picture'};
   restApi.getUser(req.user['objectId'], req.user['sessionToken'], include).then(retrivedUser => {
@@ -291,7 +295,12 @@ exports.update = function (req, res) {
 
 exports.logOut = function (req, res) {
   console.log('CFH_LogOut');
-  //User-Session is required in HTTP header
+
+  if (req.user === undefined) {
+    errorHandler.handle(new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, "invalid session token"), res);
+    return;
+  }
+  
   const restApi = new ParseRestApi(req.auth.config.publicServerURL, req.auth.config.applicationId);
   restApi.logOut(req.user['sessionToken']).then(success => {
     const response = {};
