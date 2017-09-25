@@ -4,7 +4,12 @@ const cityAssembler = require('../assemblers/city');
 const _ = require('underscore');
 
 exports.findCitiesWithPrefix = function (req, res) {
+  console.log('CFH_GetCitiesWithPrefix');
   const prefix = req.query['prefix'];
+  if (prefix === undefined) {
+    errorHandler.handleCustomizedError(400, "prefix is required.", res);
+    return;
+  }
   const query = new Parse.Query(City);
   query.startsWith('name', prefix);
   query.limit(20);
