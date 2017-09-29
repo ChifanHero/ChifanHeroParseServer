@@ -105,22 +105,16 @@ app.use(mountPath, function (req, res, next) {
 
 app.use('/dashboard', dashboard);
 
-// Parse Server plays nicely with the rest of your web routes
+// Web homepage
+app.use("/",  express.static(__dirname + '/web'));
 app.get('/', function (req, res) {
-  res.status(200).send('Welcome to ChifanHero!');
+  res.sendFile(path.join(__dirname, '/web/index.html'));
 });
 
 // There will be a test page available on the /test path of your server url
 // Remove this before launching your app
 app.get('/test', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/test.html'));
-});
-
-
-// Web homepage
-app.use("/",  express.static(__dirname + '/web'));
-app.get('/home', function (req, res) {
-  res.sendFile(path.join(__dirname, '/web/index.html'));
 });
 
 
