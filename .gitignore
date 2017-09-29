@@ -8,3 +8,4 @@
 .elasticbeanstalk/
 node_modules/
 logs/
+npm-debug.log

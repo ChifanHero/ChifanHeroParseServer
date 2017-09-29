@@ -11,7 +11,6 @@ exports.assemble = function(source) {
 			latlon['lat'] = center['latitude'];
 			latlon['lon'] = center['longitude'];
 			city['center'] = latlon;
-			console.log(center);
 		}
 		city['localized_country_name'] = source.get('localized_country_name');
 		if (source.get('activated') !== undefined) {

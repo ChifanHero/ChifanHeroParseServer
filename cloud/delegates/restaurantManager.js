@@ -23,7 +23,14 @@ const google = require('../util/googlePlace.js');
 exports.findRestaurantById = function (req, res) {
   console.log('CFH_GetRestaurant');
   const id = req.params.id;
-  const currentUser = req.user;
+  let currentUser = undefined;
+  if (req.user !== undefined && req.user['objectId'] !== undefined) {
+    currentUser = {
+      __type: 'Pointer',
+      className: '_User',
+      objectId: req.user['objectId']
+    }
+  }
   let longitude = undefined;
   let latitude = undefined;
   if (req.query.lon !== undefined) {
@@ -32,13 +39,19 @@ exports.findRestaurantById = function (req, res) {
   if (req.query.lat !== undefined) {
     latitude = parseFloat(req.query.lat);
   }
+  let timeZoneToUTC = -7;
+  if (req.query.timeZone !== undefined) {
+    timeZoneToUTC = parseInt(req.query.timeZone);
+  }
+  
   const p1 = findRestaurantById(id);
   const p2 = findRecommendedDishesByRestaurantId(id);
   const p3 = findReviewsByRestaurantId(id);
   const p4 = findPhotosByRestaurantId(id);
   const p5 = findGoogleRestaurantById(id);
   const p6 = checkIfCurrentUserFavorite(id, currentUser);
-  Parse.Promise.when(p1, p2, p3, p4, p5, p6).then((restaurant, recommendedDishes, reviews, photos, restaurantFromGoogle, isCurrentUserFavorite) => {
+  const p7 = findReviewWrittenByCurrentUser(id, currentUser);
+  Parse.Promise.when(p1, p2, p3, p4, p5, p6, p7).then((restaurant, recommendedDishes, reviews, photos, restaurantFromGoogle, isCurrentUserFavorite, reviewWrittenByCurrentUser) => {
     const restaurantRes = restaurantAssembler.assemble(restaurant);
     restaurantRes['review_info'] = {
       "total_count": 0,
@@ -79,10 +92,9 @@ exports.findRestaurantById = function (req, res) {
         if (restaurantFromGoogle.result.opening_hours.open_now !== undefined) {
           restaurantRes['open_now'] = restaurantFromGoogle.result.opening_hours.open_now;
         }
-        // AWS is using UTC time, convert UTC to PST
-        // TODO: only works in PST time, need user local time
+        // AWS is using UTC time, convert UTC to user local time
         let day = new Date().getDay();
-        if (new Date().getHours() - 8 < 0) {
+        if (new Date().getHours() + timeZoneToUTC < 0) {
           day += 6;
         }
         restaurantRes['open_time_today'] = restaurantFromGoogle.result.opening_hours.weekday_text[(day + 6) % 7];
@@ -118,6 +130,9 @@ exports.findRestaurantById = function (req, res) {
     }
     if (isCurrentUserFavorite !== undefined) {
       restaurantRes['current_user_favorite'] = isCurrentUserFavorite;
+    }
+    if (reviewWrittenByCurrentUser !== undefined) {
+      restaurantRes['current_user_review'] = reviewWrittenByCurrentUser;
     }
     const response = {
       'result': restaurantRes
@@ -230,6 +245,36 @@ function checkIfCurrentUserFavorite(id, user) {
   });
   return promise;
 }
+
+function findReviewWrittenByCurrentUser(id, user) {
+  const promise = new Parse.Promise();
+  if (user === undefined) {
+    promise.resolve();
+    return promise;
+  }
+
+  const reviewQuery = new Parse.Query(Review);
+  reviewQuery.include('user');
+  reviewQuery.include('user.picture');
+  const restaurant = new Restaurant();
+  restaurant.id = id;
+  reviewQuery.equalTo('restaurant', restaurant);
+  reviewQuery.equalTo('user', user);
+  reviewQuery.first().then(review => {
+    if (review !== undefined) {
+      const imageQuery = new Parse.Query(Image);
+      imageQuery.equalTo('review', review);
+      imageQuery.find().then(photos => {
+        const result = reviewAssembler.assemble(review, photos);
+        promise.resolve(result);
+      });
+    } else {
+      promise.resolve();
+    }
+  });
+  return promise;
+}
+
 
 /**
  * Update restaurant by Id. We only update restaurant name for now.

@@ -13,4 +13,4 @@ exports.mergeRating = function (chifanHeroRating, chifanHeroRatingCount, googleR
     return parseFloat(((chifanHeroRating * chifanHeroRatingCount + googleRating * googleRatingCount) / (chifanHeroRatingCount + googleRatingCount)).toFixed(1));
   }
   return googleRating;
-}
+};

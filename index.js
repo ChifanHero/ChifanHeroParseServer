@@ -15,6 +15,9 @@ const homepageManager = require('./cloud/delegates/homepageManager');
 const reviewManager = require('./cloud/delegates/reviewManager');
 const userActivityManager = require('./cloud/delegates/userActivityManager');
 const recommendedDishManager = require('./cloud/delegates/recommendedDishManager');
+const errorHandler = require('./cloud/errorHandler');
+
+const ParseRestApi = require('./cloud/rest/ParseRestApi');
 
 const devEnv = {
   //dbURI: "mongodb://aws:aws@ds015780.mlab.com:15780/lightning-staging",
@@ -36,6 +39,29 @@ const api = new ParseServer({
   serverURL: process.env.SERVER_URL || devEnv.serverURL,  // Don't forget to change to https if needed
   liveQuery: {
     classNames: ["Image"] // List of classes to support for query subscriptions
+  },
+  verifyUserEmails: true,
+  appName: process.env.APP_NAME || devEnv.appName,
+  publicServerURL: process.env.SERVER_URL || devEnv.serverURL,
+  emailAdapter: {
+    module: 'parse-server-simple-mailgun-adapter',
+    options: {
+      // The address that your emails come from
+      fromAddress: 'noreply@mail.chifanhero.com',
+      // Your domain from mailgun.com
+      domain: 'mail.chifanhero.com',
+      // Your API key from mailgun.com
+      apiKey: 'key-57edf739c4830a0094f772422e46d5ee',
+    }
+  },
+  preventLoginWithUnverifiedEmail: false,
+  emailVerifyTokenValidityDuration: 24 * 60 * 60,
+  revokeSessionOnPasswordReset: true,
+  passwordPolicy: {
+    // a RegExp object or a regex string representing the pattern to enforce 
+    validatorPattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.{8,})/, // enforce password with at least 8 char with at least 1 lower case, 1 upper case and 1 digit
+    //optional setting to set a validity duration for password reset links (in seconds)
+    resetTokenValidityDuration: 24 * 60 * 60, // expire after 24 hours
   }
 });
 
@@ -66,11 +92,12 @@ app.use(mountPath, function (req, res, next) {
   if (sessionToken === undefined) {
     next();
   } else {
-    Parse.User.become(sessionToken).then(user => {
+    const restApi = new ParseRestApi(req.auth.config.publicServerURL, req.auth.config.applicationId);
+    restApi.retrieveUserFromSession(sessionToken).then(user => {
       req.user = user;
       next();
     }, error => {
-      res.status(401).json(error);
+      errorHandler.handle(error, res);
     });
   }
 
@@ -100,7 +127,7 @@ app.get('/home', function (req, res) {
 //GET
 
 app.get('/parse/restaurants/:id', restaurantManager.findRestaurantById);
-app.get('/parse/restaurants/:id/images', imageManager.findAllImagesOfOneRestaurant);
+//app.get('/parse/restaurants/:id/images', imageManager.findAllImagesOfOneRestaurant);
 app.get('/parse/restaurants/:id/reviews', reviewManager.findAllReviewsOfOneRestaurant);
 app.get('/parse/restaurants/:id/recommendedDishes', recommendedDishManager.findAllRecommendedDishesOfOneRestaurant);
 
@@ -117,6 +144,11 @@ app.get('/parse/hotCities', cityManager.findAllHotCities);
 app.get('/parse/homepages', homepageManager.getHomePages);
 app.get('/parse/reviews/:id', reviewManager.findReviewById);
 
+app.get('/parse/newRandomUser', userManager.newRandomUser);
+app.get('/parse/me', userManager.retrieveMyInfo);
+app.get('/parse/me/emailVerified', userManager.emailVerified);
+
+
 //POST
 app.post('/parse/favorites', favoriteManager.addByUserSession);
 app.post('/parse/images', imageManager.uploadImage);
@@ -126,13 +158,17 @@ app.post('/parse/users/signUp', userManager.signUp);
 app.post('/parse/users/logIn', userManager.logIn);
 app.post('/parse/users/update', userManager.update);
 app.post('/parse/users/logOut', userManager.logOut);
-app.post('/parse/reviews', reviewManager.createReview);
-app.post('/parse/recommendedDishes', recommendedDishManager.upsertRecommendedDish);
+app.post('/parse/users/changePassword', userManager.changePassword);
+app.post('/parse/users/resetPassword', userManager.resetPassword);
 app.post('/parse/restaurantCollectionMemCan', selectedCollectionManager.nominateRestaurant);
 app.post('/parse/restaurants/:id', restaurantManager.updateRestaurantById);
+app.post('/parse/restaurants/:restaurantId/reviews', reviewManager.upsertReview);
+app.post('/parse/restaurants/:restaurantId/reviews/:reviewId', reviewManager.upsertReview);
+app.post('/parse/restaurants/:id/recommendedDishes', recommendedDishManager.upsertRecommendedDish);
 
 //DELETE
 app.delete('/parse/favorites', favoriteManager.deleteByUserSession);
+app.delete('/parse/images', imageManager.deleteImages);
 
 const port = process.env.PORT || 1337;
 const httpServer = require('http').createServer(app);
