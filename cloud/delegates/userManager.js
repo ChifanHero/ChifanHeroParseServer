@@ -276,10 +276,8 @@ exports.update = function (req, res) {
     user['email'] = email;
   }
   restApi.updateUser(user, req.user['sessionToken']).then(() => {
-    const response = {
-      'success': true
-    };
-    res.status(200).json(response);
+    const include = {'include': 'picture'};
+    return restApi.getUser(req.user['objectId'], req.user['sessionToken'], include);
   }, error => {
     console.error('Error_UpdateUserInfo');
     const messages = error['message'];
@@ -290,6 +288,16 @@ exports.update = function (req, res) {
     } else {
       errorHandler.handle(error, res);
     }
+  }).then(retrivedUser => {
+    const assembledUser = restUserAssembler.assemble(retrivedUser);
+    const response = {
+      'user': assembledUser,
+      'success': true
+    };
+    res.status(200).json(response);
+  }, error => {
+    console.error('Error_UpdateUserInfo_RetriveUserInfo');
+    errorHandler.handle(error, res);
   });
 };
 
