@@ -25,8 +25,10 @@ Parse.Cloud.beforeSave('Review', function (request, response) {
       }
       restaurant.save().then(r => {
         response.success();
+      }, error => {
+        response.error(error);
       });
-    }, function (error) {
+    }, error => {
       response.error(error);
     });
   } else {
