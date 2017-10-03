@@ -9,8 +9,13 @@ exports.mergeRating = function (chifanHeroRating, chifanHeroRatingCount, googleR
     googleRating = 0;
     googleRatingCount = 0;
   }
-  if (chifanHeroRating !== undefined && chifanHeroRatingCount !== undefined) {
-    return parseFloat(((chifanHeroRating * chifanHeroRatingCount + googleRating * googleRatingCount) / (chifanHeroRatingCount + googleRatingCount)).toFixed(1));
+  if ((chifanHeroRatingCount === undefined || chifanHeroRatingCount === 0)
+  	&& (googleRatingCount === undefined || googleRatingCount === 0)) {
+  	return 0;
+  } else {
+  	if (chifanHeroRating !== undefined && chifanHeroRatingCount !== undefined) {
+		return parseFloat(((chifanHeroRating * chifanHeroRatingCount + googleRating * googleRatingCount) / (chifanHeroRatingCount + googleRatingCount)).toFixed(1));
+	}
   }
   return googleRating;
 };
