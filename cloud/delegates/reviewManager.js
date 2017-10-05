@@ -43,7 +43,7 @@ exports.upsertReview = function (req, res) {
       }
       review.save().then(savedReview => {
         const response = {};
-        response['result'] = reviewAssembler.assemble(savedReview);
+        response['result'] = reviewAssembler.assembleWithoutUser(savedReview);
         res.status(200).json(response);
       }, error => {
         console.error('Error_UpdateReview');
@@ -63,7 +63,7 @@ exports.upsertReview = function (req, res) {
         }
         review.save().then(savedReview => {
           const response = {};
-          response['result'] = reviewAssembler.assemble(savedReview);
+          response['result'] = reviewAssembler.assembleWithoutUser(savedReview);
           res.status(200).json(response);
         }, error => {
           console.error('Error_UpdateReview');
@@ -80,7 +80,7 @@ exports.upsertReview = function (req, res) {
 
         review.save().then(savedReview => {
           const response = {};
-          response['result'] = reviewAssembler.assemble(savedReview);
+          response['result'] = reviewAssembler.assembleWithoutUser(savedReview);
           res.status(201).json(response);
         }, error => {
           console.error('Error_CreateReview');
