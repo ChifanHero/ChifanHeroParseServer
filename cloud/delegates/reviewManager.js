@@ -18,11 +18,8 @@ exports.upsertReview = function (req, res) {
     errorHandler.handleCustomizedError(500, "User objectId is undefined", res);
     return;
   }
-  const user = {
-    __type: 'Pointer',
-    className: '_User',
-    objectId: req.user['objectId']
-  };
+  const user = new Parse.User();
+  user.id = req.user['objectId'];
 
   const rating = req.body['rating'];
   const content = req.body['content'];
@@ -43,7 +40,7 @@ exports.upsertReview = function (req, res) {
       }
       review.save().then(savedReview => {
         const response = {};
-        response['result'] = reviewAssembler.assembleWithoutUser(savedReview);
+        response['result'] = reviewAssembler.assemble(savedReview);
         res.status(200).json(response);
       }, error => {
         console.error('Error_UpdateReview');
@@ -63,7 +60,7 @@ exports.upsertReview = function (req, res) {
         }
         review.save().then(savedReview => {
           const response = {};
-          response['result'] = reviewAssembler.assembleWithoutUser(savedReview);
+          response['result'] = reviewAssembler.assemble(savedReview);
           res.status(200).json(response);
         }, error => {
           console.error('Error_UpdateReview');
@@ -80,7 +77,7 @@ exports.upsertReview = function (req, res) {
 
         review.save().then(savedReview => {
           const response = {};
-          response['result'] = reviewAssembler.assembleWithoutUser(savedReview);
+          response['result'] = reviewAssembler.assemble(savedReview);
           res.status(201).json(response);
         }, error => {
           console.error('Error_CreateReview');
