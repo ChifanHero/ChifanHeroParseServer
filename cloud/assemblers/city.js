@@ -7,10 +7,10 @@ exports.assemble = function(source) {
 		city['state'] = source.get('state');
 		if (source.get('center') !== undefined) {
       const center = source.get('center');
-      const latlon = {};
-			latlon['lat'] = center['latitude'];
-			latlon['lon'] = center['longitude'];
-			city['center'] = latlon;
+      city['center'] = {
+        'lat': center['latitude'],
+        'lon': center['longitude']
+      };
 		}
 		city['localized_country_name'] = source.get('localized_country_name');
 		if (source.get('activated') !== undefined) {
