@@ -22,7 +22,6 @@ exports.findCitiesWithPrefix = function (req, res) {
         response['results'].push(cityAssembler.assemble(city));
       });
     }
-    response['results'] = cities;
     res.status(200).json(response);
   }, error => {
     errorHandler.handle(error, res);
