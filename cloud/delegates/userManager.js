@@ -147,7 +147,6 @@ exports.logIn = function (req, res) {
       } else if (users.length > 1) {
         // This should not happen
         errorHandler.handleCustomizedError(500, "Find multiple users with same email", res);
-        res.status(500).json({});
       } else {
         const user = users[0];
         const retrievedUsername = user.get('username');
@@ -387,12 +386,11 @@ exports.newRandomUser = function (req, res) {
   let generatedNickname;
   let randomUser;
   configQuery.equalTo('key', 'available_temp_users_count');
-  configQuery.find().then(configs => {
-    if (configs === undefined || configs.length !== 1) {
+  configQuery.first().then(config => {
+    if (config === undefined) {
       console.error('Error_NewRandomUser_UnableToReadConfig');
-      res.status(500).send();
+      errorHandler.handleCustomizedError(500, "Unable to read config", res);
     } else {
-      const config = configs[0];
       const availableUsers = config.get('numberValue');
       if (availableUsers >= 1) {
         config.increment('numberValue', -1);
