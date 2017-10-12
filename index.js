@@ -15,6 +15,7 @@ const homepageManager = require('./cloud/delegates/homepageManager');
 const reviewManager = require('./cloud/delegates/reviewManager');
 const userActivityManager = require('./cloud/delegates/userActivityManager');
 const recommendedDishManager = require('./cloud/delegates/recommendedDishManager');
+const appVersionManager = require('./cloud/delegates/appVersionManager');
 const errorHandler = require('./cloud/errorHandler');
 
 const ParseRestApi = require('./cloud/rest/ParseRestApi');
@@ -71,9 +72,21 @@ const dashboard = new ParseDashboard({
       "serverURL": process.env.SERVER_URL || devEnv.serverURL,
       "appId": process.env.APP_ID || devEnv.appId,
       "masterKey": process.env.MASTER_KEY || devEnv.masterKey,
-      "appName": process.env.APP_NAME || devEnv.appName
+      "appName": process.env.APP_NAME || devEnv.appName,
+      "iconName": "AppLogo.png"
     }
-  ]
+  ],
+  "iconsFolder": "./icons",
+  "users": [
+    {
+      "user":"chifanheroparsealex",
+      "pass":"1234"
+    },
+    {
+      "user":"chifanheroparsericky",
+      "pass":"1234"
+    }
+  ],
 });
 // Client-keys like the javascript key or the .NET key are not necessary with parse-server
 // If you wish you require them, you can set them as options in the initialization above:
@@ -141,6 +154,8 @@ app.get('/parse/reviews/:id', reviewManager.findReviewById);
 app.get('/parse/newRandomUser', userManager.newRandomUser);
 app.get('/parse/me', userManager.retrieveMyInfo);
 app.get('/parse/me/emailVerified', userManager.emailVerified);
+
+app.get('/parse/appVersionInfo', appVersionManager.getAppStoreVersionInfo);
 
 
 //POST
