@@ -453,9 +453,6 @@ function pickRandomProfilePic() {
   const promise = new Parse.Promise();
   const query = new Parse.Query(DefaultProfilePicture);
   query.find().then(pics => {
-    // google.client().placeDetail(restaurant.get('google_place_id')).then(restaurantFromGoogle => {
-    //   promise.resolve(restaurantFromGoogle);
-    // });
     if (pics === undefined || pics.length === 0) {
       console.error('Error_NewRandomUser_UnableToPickRandomProfilePic');
       promise.reject(new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, "Default profile pic not found"));
