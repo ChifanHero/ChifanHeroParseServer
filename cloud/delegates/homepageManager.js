@@ -16,21 +16,14 @@ exports.getHomePages = function (req, res) {
   const longitude = parseFloat(req.query.lon);
   const p1 = findNearestRestaurants(10, latitude, longitude);
   const p2 = findRecomendedRestaurants(5, latitude, longitude);
-  const p3 = findHotestRestaurants(15, latitude, longitude);
   const response = {};
-  Parse.Promise.when(p1, p2, p3).then(function (nearest, recommended, hottest) {
+  Parse.Promise.when(p1, p2).then(function (nearest, recommended) {
     const homepageSections = [];
-    dedupe(hottest, recommended); // if a restaurant is already recommended, don't show it in
-                                  // the "hottest" section so that we will be able to show more restaurants
+    
     let placement = 0;
     if (recommended !== undefined && recommended.length >= 3) {
       homepageSections.push(assembleResults(recommended, "英雄推荐", placement, latitude, longitude));
       nearest = dedupe(nearest, recommended);
-      hottest = dedupe(hottest, recommended.concat(nearest));
-      placement++;
-    }
-    if (hottest !== undefined && hottest.length >= 3) {
-      homepageSections.push(assembleResults(hottest, "热门餐厅", placement, latitude, longitude));
       placement++;
     }
     if (nearest !== undefined && nearest.length > 0) {
@@ -44,24 +37,6 @@ exports.getHomePages = function (req, res) {
   });
 };
 
-function dedupe(from, exclude) {
-  if (from != undefined && from.length > 0 && exclude != undefined && exclude.length > 0) {
-    const excludedIds = {};
-    _.each(exclude, function (excluded) {
-      excludedIds[excluded.id] = true;
-    });
-    const deduped = [];
-    _.each(from, function(restaurant) {
-      if (excludedIds[restaurant.id] !== true) {
-        deduped.push(restaurant);
-      }
-    });
-    return deduped;
-  } else {
-    return from;
-  }
-}
-
 // nearest
 function findNearestRestaurants(limit, latitude, longitude) {
   const promise = new Parse.Promise();
@@ -71,7 +46,8 @@ function findNearestRestaurants(limit, latitude, longitude) {
     query.limit(limit);
   }
   const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
-  query.near("coordinates", userGeoPoint);
+  query.near('coordinates', userGeoPoint);
+  query.exists('name');
   query.notEqualTo('blacklisted', true);
   query.notEqualTo('on_hold', true);
 
@@ -93,8 +69,8 @@ function findRecomendedRestaurants(limit, latitude, longitude) {
     query.limit(limit);
   }
   const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
-  query.withinMiles("coordinates", userGeoPoint, 5);
-  query.equalTo('is_recommendation_candidate', true);
+  query.withinMiles('coordinates', userGeoPoint, 50);
+  query.equalTo('is_officially_recommended', true);
   query.notEqualTo('blacklisted', true);
   query.notEqualTo('on_hold', true);
   
@@ -115,7 +91,7 @@ function findHotestRestaurants(limit, latitude, longitude) {
   query.descending('google_rating'); // This is a hack. some restaurants doesn't have "rating" but we still want to show them.
   query.limit(limit * 2); // limit = limit * 2 because we will do local sorting
   const userGeoPoint = new Parse.GeoPoint(latitude, longitude);
-  query.withinMiles("coordinates", userGeoPoint, 30);
+  query.withinMiles('coordinates', userGeoPoint, 30);
   query.notEqualTo('blacklisted', true);
   query.notEqualTo('on_hold', true);
   
@@ -135,10 +111,9 @@ function findHotestRestaurants(limit, latitude, longitude) {
 
 function sortByRating(restaurants) {
   if (restaurants !== undefined && restaurants.length > 0) {
-    const sorted = _.sortBy(restaurants, function(restaurant){
+    return _.sortBy(restaurants, function (restaurant) {
       return calculateRatingForParseObject(restaurant);
     }).reverse();
-    return sorted;
   } else {
     return [];
   }
