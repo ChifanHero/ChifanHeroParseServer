@@ -62,6 +62,14 @@ exports.findAllRestaurantMembersById = function (req, res) {
   const id = req.params.id;
   const selectedCollection = new SelectedCollection();
   selectedCollection.id = id;
+  let longitude = undefined;
+  let latitude = undefined;
+  if (req.query.lon !== undefined) {
+    longitude = parseFloat(req.query.lon);
+  }
+  if (req.query.lat !== undefined) {
+    latitude = parseFloat(req.query.lat);
+  }
   const query = new Parse.Query(RestaurantCollectionMember);
   query.include('restaurant');
   query.include('restaurant.image');
@@ -72,7 +80,22 @@ exports.findAllRestaurantMembersById = function (req, res) {
     };
     if (restaurantCollectionMembers !== undefined && restaurantCollectionMembers.length > 0) {
       _.each(restaurantCollectionMembers, restaurantCollectionMember => {
-        response['results'].push(restaurantAssembler.assemble(restaurantCollectionMember.get('restaurant')));
+        const restaurant = restaurantAssembler.assemble(restaurantCollectionMember.get('restaurant'));
+        if (latitude !== undefined && longitude !== undefined 
+          && restaurant.coordinates !== undefined 
+          && restaurant.coordinates.lat !== undefined && restaurant.coordinates.lon !== undefined) {
+          const startPoint = new Parse.GeoPoint(latitude, longitude);
+          const destination = new Parse.GeoPoint(restaurant.coordinates.lat, restaurant.coordinates.lon);
+          let distanceValue = startPoint.milesTo(destination);
+          let distance = {};
+          if (distanceValue !== undefined) {
+            distanceValue = parseFloat(distanceValue.toFixed(2));
+            distance["value"] = distanceValue;
+            distance["unit"] = "mi";
+            restaurant['distance'] = distance;
+          }
+        }
+        response['results'].push(restaurant);
       });
     }
     res.status(200).json(response);
