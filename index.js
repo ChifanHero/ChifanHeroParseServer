@@ -21,12 +21,12 @@ const errorHandler = require('./cloud/errorHandler');
 const ParseRestApi = require('./cloud/rest/ParseRestApi');
 
 const devEnv = {
-  //dbURI: "mongodb://aws:aws@ds015780.mlab.com:15780/lightning-staging",
-  dbURI: "mongodb://readwrite:readwrite@ec2-34-212-245-174.us-west-2.compute.amazonaws.com:27017/chifanhero?authSource=admin",
-  appId: "28BX7btLUKGGsFGCSyGGv9Pzj1nCWDl9EV6GpMBQ",
-  masterKey: "rj0pEKLhfWX8310qDj9s0rUEAo4ukQJrTNtCP11j",
+  //dbURI: "",
+  dbURI: "",
+  appId: "",
+  masterKey: "",
   serverURL: "http://localhost:1337/parse",
-  fileKey: "b0e50b64-fcb1-41db-8a0d-96a8e5de542d",
+  fileKey: "",
   appName: "ChifanHero-Staging"
 };
 const databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
@@ -48,11 +48,11 @@ const api = new ParseServer({
     module: 'parse-server-simple-mailgun-adapter',
     options: {
       // The address that your emails come from
-      fromAddress: 'noreply@mail.chifanhero.com',
+      fromAddress: '',
       // Your domain from mailgun.com
-      domain: 'mail.chifanhero.com',
+      domain: '',
       // Your API key from mailgun.com
-      apiKey: 'key-57edf739c4830a0094f772422e46d5ee',
+      apiKey: '',
     }
   },
   preventLoginWithUnverifiedEmail: false,
